@@ -1,0 +1,41 @@
+import { Routes } from '@angular/router';
+import { LoginComponent } from './login/login.component';
+import { MainMenuComponent } from './main-menu/main-menu.component';
+import { RegisterComponent } from './register/register.component';
+import { NewProductComponent } from './products/new-product/new-product.component';
+import { ProductsComponent } from './products/products.component';
+import { PedidosComponent } from './pedidos/pedidos.component';
+import { UsersComponent } from './users/users.component';
+import { NewUserComponent } from './users/new-user/new-user.component';
+import { NewPedidoComponent } from './pedidos/new-pedido/new-pedido.component';
+import { LocalesComponent } from './locales/locales.component';
+import { NewLocalComponent } from './locales/new-local/new-local.component';
+import { StockComponent } from './stock/stock.component';
+import { NewStockComponent } from './stock/new-stock/new-stock.component';
+import { StatsComponent } from './stats/stats.component';
+import { AccountComponent } from './account/account.component';
+import { EditProductComponent } from './products/edit-product/edit-product.component';
+import { EditPedidoComponent } from './pedidos/edit-pedido/edit-pedido.component';
+import { EditLocalComponent } from './locales/edit-local/edit-local.component';
+
+export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'main-menu', component: MainMenuComponent },
+  { path: 'products/nuevo', component: NewProductComponent },
+  { path: 'products/editar/:id', component: EditProductComponent },
+  { path: 'products', component: ProductsComponent },
+  { path: 'pedidos', component: PedidosComponent },
+  { path: 'pedidos/nuevo', component: NewPedidoComponent },
+  { path: 'pedidos/editar/:id', component: EditPedidoComponent },
+  { path: 'users', component: UsersComponent },
+  { path: 'users/nuevo', component: NewUserComponent },
+  { path: 'locales', component: LocalesComponent },
+  { path: 'locales/nuevo', component: NewLocalComponent },
+  { path: 'locales/edit/:id', component: EditLocalComponent },
+  { path: 'stock', component: StockComponent },
+  { path: 'stock/nuevo', component: NewStockComponent },
+  { path: 'stats', component: StatsComponent },
+  { path: 'cuenta', component: AccountComponent },
+  { path: '', redirectTo: '/register', pathMatch: 'full' }
+];

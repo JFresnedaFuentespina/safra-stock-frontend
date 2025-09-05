@@ -1,0 +1,42 @@
+.graficos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    justify-content: center;
+}
+
+.grafico-container {
+    margin: 0 10px;
+    position: relative;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    /* Para que el contenedor tenga un tamaño mínimo decente */
+    min-width: 320px;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+canvas {
+    width: 100% !important;
+    /* Un poco más de altura para mejor proporción */
+    height: 300px !important;
+    max-width: 600px;
+    /* para no crecer demasiado en pantallas grandes */
+}
+
+@media (min-width: 768px) {
+    .grafico-container {
+        min-width: 400px;
+        min-height: 350px;
+    }
+
+    canvas {
+        height: 350px !important;
+    }
+}

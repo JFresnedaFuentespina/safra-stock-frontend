@@ -1,0 +1,61 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 text-center">Nuevo Stock</h2>
+
+    <!-- Mensajes -->
+    <div *ngIf="loading" class="alert alert-info">Cargando productos…</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <!-- Formulario -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <!-- Selección de local -->
+        <div class="mb-3">
+            <label for="localSelect" class="form-label">Local:</label>
+            <select id="localSelect" formControlName="local" class="form-select" required>
+                <option value="" disabled selected>--Seleccione--</option>
+                <option *ngFor="let local of locales" [value]="local.name">
+                    {{ local.name }}
+                </option>
+            </select>
+        </div>
+
+        <div formArrayName="products">
+            <div *ngFor="let product of productsArray.controls; let i = index" [formGroupName]="i"
+                class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.get('productName')?.value }}</h5>
+
+                    <div formArrayName="entries">
+                        <div *ngFor="let entry of getEntries(i).controls; let j = index" [formGroupName]="j"
+                            class="row g-2 align-items-center mb-3">
+                            <!-- Cantidad -->
+                            <div class="col-12 col-sm-5 col-md-5">
+                                <input type="number" formControlName="quantity" class="form-control"
+                                    placeholder="Cantidad" min="1" required>
+                            </div>
+                            <!-- Fecha -->
+                            <div class="col-12 col-sm-5 col-md-5">
+                                <input type="date" formControlName="date" class="form-control" [max]="maxDate" required>
+                            </div>
+                            <!-- Botón eliminar -->
+                            <div
+                                class="col-12 col-sm-2 col-md-2 text-sm-start text-md-center mt-2 mt-sm-0 d-flex justify-content-sm-start justify-content-md-center">
+                                <button *ngIf="getEntries(i).length > 1" type="button" class="btn btn-danger btn-sm"
+                                    (click)="removeEntry(i, j)" aria-label="Eliminar entrada">
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="addEntry(i)">
+                        <span class="bi bi-plus"></span> Añadir fecha
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 mt-3 mb-3">Guardar Stock</button>
+    </form>
+</div>

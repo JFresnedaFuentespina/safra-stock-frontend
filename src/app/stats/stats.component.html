@@ -1,0 +1,29 @@
+<app-navbar></app-navbar>
+<div class="container py-4">
+    <h2 class="text-center mb-4">Estadísticas de Pedidos</h2>
+
+    <div class="graficos-grid">
+        <!-- Productos más pedidos -->
+        <div class="grafico-container">
+            <h4>Productos más pedidos</h4>
+            <canvas baseChart [data]="datosProductosMasPedidos" [options]="opcionesGrafico" [type]="'bar'">
+            </canvas>
+        </div>
+
+        <!-- Locales con más pedidos -->
+        <div class="grafico-container">
+            <h4>Locales con más pedidos</h4>
+            <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'">
+            </canvas>
+        </div>
+
+        <!-- Comparativa por local -->
+        <div *ngIf="datosRadarPorLocal?.labels?.length" class="grafico-container">
+            <h4>Comparativa de productos por local</h4>
+            <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'" width="300"
+                height="300">
+            </canvas>
+
+        </div>
+    </div>
+</div>

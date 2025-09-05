@@ -1,0 +1,112 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        Lista de Productos
+        <button class="btn btn-primary flex-shrink-0" (click)="onNewProduct()">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Producto
+        </button>
+    </h2>
+
+    <!-- Selector de estado -->
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <label for="filterStatus" class="form-label mb-0">Mostrar:</label>
+        <select id="filterStatus" class="form-select w-auto" [(ngModel)]="filterStatus">
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="all">Todos</option>
+        </select>
+    </div>
+
+
+    <!-- Vista tabla para pantallas medianas y grandes -->
+    <div class="table-responsive w-100 d-none d-md-block">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container
+                    *ngFor="let product of filteredProducts | paginate:{itemsPerPage:5,currentPage:page}; let i = index">
+                    <tr>
+                        <td>{{ product.id }}</td>
+                        <td>
+                            <img *ngIf="product.imageUrl" [src]="product.imageUrl" style="width:60px; height:auto;">
+                        </td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.description }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-1" (click)="onEditProduct(product.id)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button *ngIf="product.active" class="btn btn-sm btn-danger"
+                                (click)="onDeleteProduct(product.id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button *ngIf="!product.active" class="btn btn-sm btn-success"
+                                (click)="onEnableProduct(product.id)">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse" [id]="'rowDetails' + i">
+                        <td colspan="5">
+                            <img *ngIf="product.imageUrl" [src]="product.imageUrl" style="width:100px;" class="me-3">
+                            Más información o detalles extendidos del producto aquí.
+                        </td>
+                    </tr>
+                </ng-container>
+            </tbody>
+        </table>
+
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+
+    <!-- Vista tarjeta para móviles -->
+    <div class="d-md-none">
+        <div class="row g-3">
+            <div class="col-12"
+                *ngFor="let product of filteredProducts | paginate: { itemsPerPage: 3, currentPage: page}">
+                <div class="card shadow-sm">
+                    <div class="row g-0">
+                        <div class="col-4 d-flex align-items-center justify-content-center p-2">
+                            <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="Imagen de {{ product.name }}"
+                                class="img-fluid rounded" />
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body p-2">
+                                <h5 class="card-title mb-1">{{ product.id }}</h5>
+                                <h5 class="card-title mb-1">{{ product.name }}</h5>
+                                <p class="card-text small mb-2">{{ product.description }}</p>
+                                <div class="d-flex gap-2 mt-3">
+                                    <button class="btn btn-sm btn-warning flex-fill"
+                                        (click)="onEditProduct(product.id)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button *ngIf="product.active" class="btn btn-sm btn-danger flex-fill"
+                                        (click)="onDeleteProduct(product.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button *ngIf="!product.active" class="btn btn-sm btn-success flex-fill"
+                                        (click)="onEnableProduct(product.id)">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+</div>

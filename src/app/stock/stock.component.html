@@ -1,0 +1,81 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        Stock
+        <button class="btn btn-primary flex-shrink-0" (click)="onNewStock()">
+            <i class="bi bi-plus-circle me-1"></i> Añadir Stock
+        </button>
+    </h2>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <!-- Tabla para pantallas md y superiores -->
+    <div class="table-responsive d-none d-md-block" *ngIf="stockList?.length">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Local</th>
+                    <th>Productos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let stock of stockList; let i = index">
+                    <td>{{ stock.localName }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary btn-outline" type="button" data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseProducts' + i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseProducts' + i">
+                            Ver productos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseProducts' + i">
+                            <ul class="list-group">
+                                <li *ngFor="let p of stock.products"
+                                    class="list-group-item d-flex justify-content-between">
+                                    <span>{{ p.productName }}</span>
+                                    <span>{{ p.stock }}</span>
+                                    <span *ngIf="p.date">{{ formatFecha(p.date) }}</span>
+                                    <span *ngIf="!p.date">Fecha no disponible</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Vista tipo tarjeta para móviles -->
+    <div class="d-md-none" *ngIf="stockList?.length">
+        <div class="row g-3">
+            <div class="col-12" *ngFor="let stock of stockList; let i = index">
+                <div class="card shadow-sm p-2">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">{{ stock.localName }}</h5>
+
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" type="button"
+                            data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseProductsMobile' + i"
+                            aria-expanded="false" [attr.aria-controls]="'collapseProductsMobile' + i">
+                            Ver productos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
+                            <ul class="list-group">
+                                <li *ngFor="let p of stock.products"
+                                    class="list-group-item d-flex justify-content-between">
+                                    <span>{{ p.productName }}</span>
+                                    <span>{{ p.stock }}</span>
+                                    <span *ngIf="p.date">{{ formatFecha(p.date) }}</span>
+                                    <span *ngIf="!p.date">Fecha no disponible</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!stockList?.length && !error" class="alert alert-secondary mt-3">
+        No hay stock disponible.
+    </div>
+</div>

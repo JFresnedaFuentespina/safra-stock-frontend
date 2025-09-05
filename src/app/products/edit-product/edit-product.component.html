@@ -1,0 +1,41 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4" style="max-width: 500px;">
+    <h3>Editar Producto</h3>
+
+    <!-- Solo renderiza el formulario si productForm está inicializado -->
+    <form *ngIf="productForm" [formGroup]="productForm" (ngSubmit)="onSubmit()">
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Nombre</label>
+            <input id="name" type="text" class="form-control" formControlName="name">
+            <div class="text-danger mt-1" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+                El nombre es obligatorio.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Descripción</label>
+            <textarea id="description" rows="3" class="form-control" formControlName="description"></textarea>
+            <div class="text-danger mt-1"
+                *ngIf="productForm.get('description')?.invalid && productForm.get('description')?.touched">
+                La descripción es obligatoria.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Imagen</label>
+            <input type="file" id="image" name="image" class="form-control" (change)="onFileSelected($event)"
+                accept="image/*" />
+        </div>
+
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="productForm.invalid">
+            Guardar cambios
+        </button>
+        <button type="button" class="btn btn-secondary w-100 mt-2" (click)="onCancel()">
+            Cancelar
+        </button>
+
+    </form>
+</div>

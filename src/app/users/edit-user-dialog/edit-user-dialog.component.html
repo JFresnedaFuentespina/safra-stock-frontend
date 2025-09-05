@@ -1,0 +1,28 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+    <mat-dialog-content>
+        <mat-form-field style="width: 100%;">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre" />
+        </mat-form-field>
+
+        <mat-form-field style="width: 100%;">
+            <mat-label>Correo</mat-label>
+            <input matInput formControlName="correo" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" style="width: 100%;">
+            <mat-label>Permisos</mat-label>
+            <mat-select formControlName="permisos">
+                <mat-option value="Administrador">Administrador</mat-option>
+                <mat-option value="Usuario">Usuario</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button type="button" (click)="cancel()">Cancelar</button>
+        <button mat-flat-button color="primary" type="submit">Guardar</button>
+    </mat-dialog-actions>
+</form>

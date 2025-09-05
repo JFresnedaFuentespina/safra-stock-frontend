@@ -1,0 +1,40 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+  <h2 class="my-4 d-flex justify-content-center align-items-center gap-3">Nuevo Pedido</h2>
+
+  <!-- Mensajes -->
+  <div *ngIf="loading" class="alert alert-info">Cargando productos…</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Formulario -->
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Local -->
+    <select id="local" class="form-select mb-3" formControlName="local"
+      [class.is-invalid]="form.get('local')?.invalid && form.touched">
+      <option value="">Seleccione un local</option>
+      <option *ngFor="let local of locales" [value]="local.name">{{ local.name }}</option>
+    </select>
+
+    <!-- Tabla de productos -->
+    <table class="table table-bordered table-striped">
+      <thead class="table">
+        <tr>
+          <th>Producto</th>
+          <th style="width: 150px">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody formArrayName="products">
+        <tr *ngFor="let group of productsArray.controls; index as i" [formGroupName]="i">
+          <td>{{ products[i].name }}</td>
+          <td>
+            <input type="number" class="form-control" formControlName="quantity" min="0" />
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+    <button class="btn btn-primary" type="submit">Guardar pedido</button>
+  </form>
+</div>

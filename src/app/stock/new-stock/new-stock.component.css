@@ -1,0 +1,9 @@
+.accordion-button {
+  font-weight: bold;
+}
+
+.accordion-body {
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  padding-top: 1rem;
+}

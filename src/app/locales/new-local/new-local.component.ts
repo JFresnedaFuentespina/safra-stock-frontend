@@ -1,0 +1,80 @@
+import { Component, OnInit } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { NavbarComponent } from '../../navbar/navbar.component';
+import { FilterPipe } from '../../shared/pipes/filter.pipe';
+
+
+@Component({
+  selector: 'app-new-local',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NavbarComponent, FilterPipe],
+  templateUrl: './new-local.component.html',
+  styleUrl: './new-local.component.css'
+})
+export class NewLocalComponent implements OnInit {
+  name: string = '';
+  users: any[] = [];
+  selectedUsers: any[] = [];
+  searchTerm: string = '';
+
+  constructor(private http: HttpClient, private router: Router) { }
+
+  ngOnInit(): void {
+    this.http.get<any[]>('http://192.168.1.20:8080/safra-stock/users').subscribe({
+      next: (data) => {
+        this.users = data;
+      },
+      error: (err) => {
+        console.error("Error al obtener usuarios", err);
+      }
+    });
+  }
+
+  toggleUserSelection(user: any) {
+    const index = this.selectedUsers.findIndex(u => u.id === user.id);
+    if (index > -1) {
+      this.selectedUsers.splice(index, 1); // Deseleccionar
+    } else {
+      this.selectedUsers.push(user); // Seleccionar
+    }
+  }
+
+  isSelected(user: any): boolean {
+    return this.selectedUsers.some(u => u.id === user.id);
+  }
+
+  onSubmit() {
+    if (!this.name.trim() || this.selectedUsers.length === 0) {
+      alert("Nombre del local y al menos un trabajador son requeridos");
+      return;
+    }
+
+    const local = {
+      name: this.name,
+      workers: this.selectedUsers
+    };
+
+    const token = localStorage.getItem('authToken');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    this.http.post('http://192.168.1.20:8080/safra-stock/locales', local, { headers }).subscribe({
+      next: () => {
+        alert("Local creado correctamente");
+        this.router.navigate(['/locales']);
+      },
+      error: (err) => {
+        console.error("Error al crear local", err);
+        alert("Error al crear local");
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
+      }
+    });
+  }
+}

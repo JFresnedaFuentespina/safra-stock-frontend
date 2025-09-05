@@ -1,0 +1,45 @@
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table .btn {
+    white-space: nowrap;
+}
+
+ul.list-unstyled {
+    padding-left: 1rem;
+    font-size: 0.95rem;
+}
+
+ul.list-unstyled li {
+    margin-bottom: 0.25rem;
+}
+
+/* Botones de acciones bien distribuidos */
+td .btn+.btn {
+    margin-left: 0.5rem;
+}
+
+@media (max-width: 576px) {
+
+    .table th,
+    .table td {
+        padding: 0.3rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    ul.list-unstyled {
+        font-size: 0.8rem;
+    }
+
+    .alert {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+}

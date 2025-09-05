@@ -1,0 +1,24 @@
+<app-navbar></app-navbar>
+<div class="container mt-4" style="max-width: 500px;">
+  <h3>Crear nuevo producto</h3>
+  <form (ngSubmit)="onSubmit()" #productForm="ngForm">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nombre</label>
+      <input type="text" id="name" name="name" class="form-control" [(ngModel)]="name" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Descripción</label>
+      <textarea id="description" name="description" class="form-control" [(ngModel)]="description" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="image" class="form-label">Imagen</label>
+      <input type="file" id="image" name="image" class="form-control" (change)="onFileSelected($event)" accept="image/*" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="!productForm.form.valid">
+      Crear producto
+    </button>
+  </form>
+</div>

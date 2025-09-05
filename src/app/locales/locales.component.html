@@ -1,0 +1,108 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        Lista de Locales
+        <button class="btn btn-primary flex-shrink-0" (click)="onNewLocal()">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Local
+        </button>
+    </h2>
+
+    <!-- Selector de estado -->
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <label for="filterStatus" class="form-label mb-0">Mostrar:</label>
+        <select id="filterStatus" class="form-select w-auto" [(ngModel)]="filterStatus">
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="all">Todos</option>
+        </select>
+    </div>
+
+    <!-- Tabla para md en adelante -->
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre del local</th>
+                    <th>Trabajadores</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    *ngFor="let local of filteredLocales | paginate: {itemsPerPage: 5, currentPage: page}; let i = index">
+                    <td>{{ local.id }}</td>
+                    <td>{{ local.name }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseWorkers' + i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseWorkers' + i">
+                            Ver trabajadores
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseWorkers' + i">
+                            <ul class="mb-0 list-unstyled">
+                                <li *ngFor="let w of local.workerNames">{{ w }}</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" (click)="editarLocal(local.id)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button *ngIf="local.active" class="btn btn-sm btn-danger" (click)="disableLocal(local.id)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button *ngIf="!local.active" class="btn btn-sm btn-success" (click)="enableLocal(local.id)">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+
+    <!-- Vista tarjeta móviles -->
+    <div class="d-md-none">
+        <div class="row g-3">
+            <div class="col-12"
+                *ngFor="let local of filteredLocales | paginate: {itemsPerPage: 4, currentPage: page}; let i = index">
+                <div class="card shadow-sm p-2">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">{{ local.id }}</h5>
+                        <h5 class="card-title mb-2">{{ local.name }}</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary mb-2" type="button"
+                                data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseWorkersMobile' + i"
+                                aria-expanded="false" [attr.aria-controls]="'collapseWorkersMobile' + i">
+                                Ver trabajadores
+                            </button>
+                            <div class="collapse mt-2" [id]="'collapseWorkersMobile' + i">
+                                <ul class="mb-0 list-unstyled">
+                                    <li *ngFor="let w of local.workerNames">{{ w }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-sm btn-warning flex-fill" (click)="editarLocal(local.id)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button *ngIf="local.active" class="btn btn-sm btn-danger flex-fill"
+                                (click)="disableLocal(local.id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button *ngIf="!local.active" class="btn btn-sm btn-success flex-fill"
+                                (click)="enableLocal(local.id)">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+</div>
