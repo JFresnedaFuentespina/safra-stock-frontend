@@ -32,7 +32,7 @@ export class RegisterComponent {
       email: this.email,
       password: this.password
     }
-    this.http.post('http://192.168.1.20:8080/safra-stock/users/register', user).subscribe({
+    this.http.post('http://safra-stock-backend.internal:8080/safra-stock/users/register', user).subscribe({
       next: (res: any) => {
         console.log("Usuario registrado", res);
         localStorage.setItem('authToken', res.token);
