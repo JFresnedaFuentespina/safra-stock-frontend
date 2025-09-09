@@ -76,7 +76,7 @@ export class EditProductComponent implements OnInit {
         Authorization: `Bearer ${token}`
       });
 
-      this.http.put(`http://192.168.1.20:8080/safra-stock/products/${this.productId}`, formData, { headers })
+      this.http.put(`http://192.168.1.35:8080/safra-stock/products/${this.productId}`, formData, { headers })
         .subscribe({
           next: () => this.router.navigate(['/products']),
           error: (err) => {

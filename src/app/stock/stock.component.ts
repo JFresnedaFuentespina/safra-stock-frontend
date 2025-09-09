@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { Common } from '../common';
 
 interface LocalStockFlat {
   productName: string;
@@ -38,7 +39,7 @@ export class StockComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    this.http.get<LocalStockFlat[]>('http://192.168.1.20:8080/safra-stock/stock').subscribe({
+    this.http.get<LocalStockFlat[]>(`${Common.url}/stock`).subscribe({
       next: (data) => {
         this.stockList = this.groupByLocal(data);
         console.log(this.stockList);

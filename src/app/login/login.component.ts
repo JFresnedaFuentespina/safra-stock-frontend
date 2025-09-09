@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpHeaders } from '@angular/common/http';
+import { Common } from '../common';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,7 @@ export class LoginComponent {
       password: this.password
     };
 
-    this.http.post('http://192.168.1.20:8080/safra-stock/login', user).subscribe({
+    this.http.post(`${Common.url}/login`, user).subscribe({
       next: (res: any) => {
         console.log("Usuario logueado", res);
         localStorage.setItem('authToken', res.token);
@@ -36,7 +37,7 @@ export class LoginComponent {
           'Authorization': `Bearer ${res.token}`
         });
 
-        this.http.get(`http://192.168.1.20:8080/safra-stock/users/${user.name}`, { headers }).subscribe({
+        this.http.get(`${Common.url}/users/${user.name}`, { headers }).subscribe({
           next: (userData: any) => {
             console.log("Datos del usuario:", userData);
 

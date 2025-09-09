@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { Common } from '../common';
 
 @Component({
   selector: 'app-register',
@@ -32,7 +33,7 @@ export class RegisterComponent {
       email: this.email,
       password: this.password
     }
-    this.http.post('http://safra-stock-backend.internal:8080/safra-stock/users/register', user).subscribe({
+    this.http.post(`${Common.url}/users/register`, user).subscribe({
       next: (res: any) => {
         console.log("Usuario registrado", res);
         localStorage.setItem('authToken', res.token);

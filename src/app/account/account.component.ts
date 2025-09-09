@@ -3,6 +3,7 @@ import { NavbarComponent } from "../navbar/navbar.component";
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { Common } from '../common';
 
 interface UserDTO {
   name: string;
@@ -25,7 +26,7 @@ export class AccountComponent implements OnInit {
   ngOnInit(): void {
     const username = localStorage.getItem('username');
     if (username) {
-      this.http.get<UserDTO>(`http://192.168.1.20:8080/safra-stock/users/${username}`)
+      this.http.get<UserDTO>(`${Common.url}/users/${username}`)
         .subscribe({
           next: (data) => {
             console.log("Usuario recibido:", data);

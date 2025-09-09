@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Common } from '../common';
 
 export interface Product {
     id: number;
@@ -13,7 +14,7 @@ export interface Product {
     providedIn: 'root'
 })
 export class ProductService {
-    private apiUrl = 'http://192.168.1.20:8080/safra-stock/products';
+    private apiUrl = Common.url +'/products';
 
     constructor(private http: HttpClient) { }
 

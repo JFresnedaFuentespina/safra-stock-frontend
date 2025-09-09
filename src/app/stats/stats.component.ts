@@ -5,6 +5,7 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { Router } from '@angular/router';
+import { Common } from '../common';
 
 @Component({
   selector: 'app-stats',
@@ -55,7 +56,7 @@ export class StatsComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    this.http.get<any[]>('http://192.168.1.20:8080/safra-stock/orders').subscribe({
+    this.http.get<any[]>(`${Common.url}/orders`).subscribe({
       next: (data) => {
         this.orders = data;
         this.procesarDatos(this.orders);

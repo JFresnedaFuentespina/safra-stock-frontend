@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Common } from '../common';
 
 export interface ProductQuantity {
   productName: string;
@@ -19,8 +20,8 @@ export interface Pedido {
   providedIn: 'root'
 })
 export class PedidoService {
-  private apiUrl = 'http://192.168.1.20:8080/safra-stock/orders';
-  private localesUrl = 'http://192.168.1.20:8080/safra-stock/locales';
+  private apiUrl = Common.url + '/orders';
+  private localesUrl = Common.url + '/locales';
 
   constructor(private http: HttpClient) { }
 

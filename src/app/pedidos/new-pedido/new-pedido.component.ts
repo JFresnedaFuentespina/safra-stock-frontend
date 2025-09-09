@@ -40,7 +40,7 @@ export class NewPedidoComponent implements OnInit {
   loading = true;
   error = '';
   locales: Local[] = [];
-  private apiUrl = 'http://192.168.1.20:8080/safra-stock';
+  private apiUrl = 'http://192.168.1.35:8080/safra-stock';
 
 
   get productsArray(): FormArray {
@@ -80,7 +80,7 @@ export class NewPedidoComponent implements OnInit {
       ? new HttpHeaders({ Authorization: `Bearer ${token}` })
       : undefined;
     // carga locales
-    this.http.get<Local[]>('http://192.168.1.20:8080/safra-stock/locales', { headers }).subscribe({
+    this.http.get<Local[]>('http://192.168.1.35:8080/safra-stock/locales', { headers }).subscribe({
       next: (data) => {
         this.locales = data;
       },

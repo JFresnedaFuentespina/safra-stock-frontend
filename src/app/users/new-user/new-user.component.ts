@@ -36,7 +36,7 @@ export class NewUserComponent {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('http://192.168.1.20:8080/safra-stock/users', user, { headers })
+    this.http.post('http://192.168.1.35:8080/safra-stock/users', user, { headers })
       .subscribe({
         next: (response: any) => {
           this.router.navigate(['/users']);

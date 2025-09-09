@@ -30,7 +30,7 @@ export class NewStockComponent implements OnInit {
   loading = true;
   error = '';
   maxDate: string = new Date().toISOString().split('T')[0];
-  private apiUrl = 'http://192.168.1.20:8080/safra-stock';
+  private apiUrl = 'http://192.168.1.35:8080/safra-stock';
 
   constructor(
     private fb: FormBuilder,

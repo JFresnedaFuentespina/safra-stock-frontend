@@ -23,7 +23,7 @@ export class NewLocalComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    this.http.get<any[]>('http://192.168.1.20:8080/safra-stock/users').subscribe({
+    this.http.get<any[]>('http://192.168.1.35:8080/safra-stock/users').subscribe({
       next: (data) => {
         this.users = data;
       },
@@ -63,7 +63,7 @@ export class NewLocalComponent implements OnInit {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('http://192.168.1.20:8080/safra-stock/locales', local, { headers }).subscribe({
+    this.http.post('http://192.168.1.35:8080/safra-stock/locales', local, { headers }).subscribe({
       next: () => {
         alert("Local creado correctamente");
         this.router.navigate(['/locales']);

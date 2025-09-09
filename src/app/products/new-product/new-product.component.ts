@@ -49,7 +49,7 @@ export class NewProductComponent {
         Authorization: `Bearer ${token}`
       });
 
-      this.http.post('http://192.168.1.20:8080/safra-stock/products', product, { headers }).subscribe({
+      this.http.post('http://192.168.1.35:8080/safra-stock/products', product, { headers }).subscribe({
         next: () => {
           alert('Producto creado correctamente');
           // Aquí redirigir o limpiar formulario si quieres

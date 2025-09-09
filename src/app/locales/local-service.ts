@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Common } from '../common';
 
 export interface LocalDTO {
     id: number;
@@ -13,7 +14,7 @@ export interface LocalDTO {
     providedIn: 'root'
 })
 export class LocalService {
-    private apiUrl = 'http://192.168.1.20:8080/safra-stock/locales'; // Ajusta según tu backend
+    private apiUrl = Common.url + '/locales';
 
     constructor(private http: HttpClient) { }
 
