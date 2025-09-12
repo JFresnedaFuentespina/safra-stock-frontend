@@ -111,6 +111,25 @@ export class StockComponent implements OnInit {
     return Object.values(grouped);
   }
 
+  formatFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '—';
+    try {
+      const dateObj = new Date(fecha);
+      const opciones: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      };
+      // Convertir a string con formato es-ES y capitalizar primera letra del día
+      return dateObj.toLocaleDateString('es-ES', opciones)
+        .replace(/^\w/, c => c.toUpperCase());
+    } catch (e) {
+      console.error('Error al formatear fecha:', fecha, e);
+      return '—';
+    }
+  }
+
 
   toggleCollapse(local: string): void {
     if (this.expanded.has(local)) {

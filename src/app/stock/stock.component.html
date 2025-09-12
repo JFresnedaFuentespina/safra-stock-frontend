@@ -10,8 +10,9 @@
 
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-    <div *ngIf="stockList?.length">
-        <table class="table table-hover table-responsive">
+    <!-- Tabla para pantallas md y superiores -->
+    <div class="table-responsive d-none d-md-block" *ngIf="stockList?.length">
+        <table class="table table-hover">
             <thead class="table-light">
                 <tr>
                     <th>Local</th>
@@ -38,53 +39,49 @@
                                     class="list-group-item d-flex justify-content-between">
                                     <span>{{ p.productName }}</span>
                                     <span>Cantidad: {{ p.stock }}</span>
-                                    <span>Fecha producto: {{ p.productDate }}</span>
+                                    <span>Fecha producto: {{ formatFecha(p.productDate) }}</span>
                                 </li>
                             </ul>
                         </div>
                     </td>
 
-                    <!-- Fecha de pedido general (puede ser la primera fecha del array, o null si no hay) -->
-                    <td>{{ stock.products.length ? stock.products[0].orderDate : '—' }}</td>
+                    <!-- Fecha de pedido general -->
+                    <td>{{ stock.products.length ? formatFecha(stock.products[0].orderDate) : '—' }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <div *ngIf="!stockList?.length && !error" class="alert alert-secondary mt-3">
-        No hay stock disponible.
-    </div>
-</div>
+    <!-- Vista tipo tarjeta para móviles -->
+    <div class="d-md-none" *ngIf="stockList?.length">
+        <div class="row g-3">
+            <div class="col-12" *ngFor="let stock of stockList; let i = index">
+                <div class="card shadow-sm p-2">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">{{ stock.localName }}</h5>
+                        <h5 class="card-title mb-2">{{ formatFecha(stock.products[0].orderDate) }}</h5>
 
-
-<!-- Vista tipo tarjeta para móviles -->
-<div class="d-md-none" *ngIf="stockList?.length">
-    <div class="row g-3">
-        <div class="col-12" *ngFor="let stock of stockList; let i = index">
-            <div class="card shadow-sm p-2">
-                <div class="card-body">
-                    <h5 class="card-title mb-2">{{ stock.localName }}</h5>
-
-                    <button class="btn btn-sm btn-outline-secondary mb-2 w-100" type="button" data-bs-toggle="collapse"
-                        [attr.data-bs-target]="'#collapseProductsMobile' + i" aria-expanded="false"
-                        [attr.aria-controls]="'collapseProductsMobile' + i">
-                        Ver productos
-                    </button>
-                    <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
-                        <ul class="list-group">
-                            <li *ngFor="let p of stock.products" class="list-group-item d-flex flex-column gap-1">
-                                <div><strong>{{ p.productName }}</strong></div>
-                                <div>Stock: {{ p.stock }}</div>
-                                <div>Producto: {{ p.productDate }}</div>
-                            </li>
-                        </ul>
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" type="button"
+                            data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseProductsMobile' + i"
+                            aria-expanded="false" [attr.aria-controls]="'collapseProductsMobile' + i">
+                            Ver productos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
+                            <ul class="list-group">
+                                <li *ngFor="let p of stock.products" class="list-group-item d-flex flex-column gap-1">
+                                    <div><strong>{{ p.productName }}</strong></div>
+                                    <div>Cantidad: {{ p.stock }}</div>
+                                    <div>{{ formatFecha(p.productDate) }}</div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div *ngIf="!stockList?.length && !error" class="alert alert-secondary mt-3">
-    No hay stock disponible.
+    <div *ngIf="!stockList?.length && !error" class="alert alert-secondary mt-3">
+        No hay stock disponible.
+    </div>
 </div>
