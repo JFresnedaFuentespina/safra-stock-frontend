@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavbarComponent } from "../../navbar/navbar.component";
+import { Common } from '../../common';
 
 @Component({
   selector: 'app-new-user',
@@ -36,7 +37,7 @@ export class NewUserComponent {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('http://192.168.1.35:8080/safra-stock/users', user, { headers })
+    this.http.post(`${Common.url}/users`, user, { headers })
       .subscribe({
         next: (response: any) => {
           this.router.navigate(['/users']);

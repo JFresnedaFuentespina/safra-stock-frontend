@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { FilterPipe } from '../../shared/pipes/filter.pipe';
+import { Common } from '../../common';
 
 
 @Component({
@@ -23,7 +24,7 @@ export class NewLocalComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    this.http.get<any[]>('http://192.168.1.35:8080/safra-stock/users').subscribe({
+    this.http.get<any[]>(`${Common.url}/users`).subscribe({
       next: (data) => {
         this.users = data;
       },
@@ -63,7 +64,7 @@ export class NewLocalComponent implements OnInit {
       'Content-Type': 'application/json'
     });
 
-    this.http.post('http://192.168.1.35:8080/safra-stock/locales', local, { headers }).subscribe({
+    this.http.post(`${Common.url}/locales`, local, { headers }).subscribe({
       next: () => {
         alert("Local creado correctamente");
         this.router.navigate(['/locales']);

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService, Product } from '../product-service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Common } from '../../common';
 
 @Component({
   selector: 'app-edit-product',
@@ -76,7 +77,7 @@ export class EditProductComponent implements OnInit {
         Authorization: `Bearer ${token}`
       });
 
-      this.http.put(`http://192.168.1.35:8080/safra-stock/products/${this.productId}`, formData, { headers })
+      this.http.put(`${Common.url}/products/${this.productId}`, formData, { headers })
         .subscribe({
           next: () => this.router.navigate(['/products']),
           error: (err) => {

@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavbarComponent } from "../../navbar/navbar.component";
+import { Common } from '../../common';
 
 @Component({
   selector: 'app-new-product',
@@ -49,7 +50,7 @@ export class NewProductComponent {
         Authorization: `Bearer ${token}`
       });
 
-      this.http.post('http://192.168.1.35:8080/safra-stock/products', product, { headers }).subscribe({
+      this.http.post(`${Common.url}/products`, product, { headers }).subscribe({
         next: () => {
           alert('Producto creado correctamente');
           // Aquí redirigir o limpiar formulario si quieres

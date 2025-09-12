@@ -14,6 +14,7 @@ import { ProductService, Product } from '../../products/product-service';
 import { PedidoService } from '../pedidos-service';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Common } from '../../common';
 
 export interface Local {
   name: string
@@ -40,7 +41,6 @@ export class NewPedidoComponent implements OnInit {
   loading = true;
   error = '';
   locales: Local[] = [];
-  private apiUrl = 'http://192.168.1.35:8080/safra-stock';
 
 
   get productsArray(): FormArray {
@@ -80,7 +80,7 @@ export class NewPedidoComponent implements OnInit {
       ? new HttpHeaders({ Authorization: `Bearer ${token}` })
       : undefined;
     // carga locales
-    this.http.get<Local[]>('http://192.168.1.35:8080/safra-stock/locales', { headers }).subscribe({
+    this.http.get<Local[]>(`${Common.url}/locales`, { headers }).subscribe({
       next: (data) => {
         this.locales = data;
       },
@@ -145,7 +145,7 @@ export class NewPedidoComponent implements OnInit {
 
   getUsersInLocal(localName: string): Observable<SimpleUser[]> {
     const params = new HttpParams().set('localName', localName);
-    return this.http.get<SimpleUser[]>(`${this.apiUrl}/users/get-users-in-local`, { params });
+    return this.http.get<SimpleUser[]>(`${Common.url}/users/get-users-in-local`, { params });
   }
 
   sendEmailPedido(): void {
@@ -164,7 +164,7 @@ export class NewPedidoComponent implements OnInit {
       products: productosSeleccionados   // <-- aquí agregamos los productos
     };
 
-    this.http.post(`${this.apiUrl}/orders/send-order-notification`, payload).subscribe({
+    this.http.post(`${Common.url}/orders/send-order-notification`, payload).subscribe({
       next: () => {
         alert('Correo enviado a los trabajadores del local');
       },

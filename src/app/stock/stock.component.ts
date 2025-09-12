@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { Common } from '../common';
+import { ProductStockDate } from './product-stock-date';
 
 interface LocalStockFlat {
   productName: string;
   localName: string;
   stock: number;
-  date: string;
+  productDate: string;   // fecha del producto
+  stockDate: string;     // fecha del pedido (ProductStockDate)
 }
 
 interface GroupedStock {
@@ -18,7 +20,8 @@ interface GroupedStock {
   products: {
     productName: string;
     stock: number;
-    date: string;
+    productDate: string;
+    orderDate: string;
   }[];
 }
 
@@ -34,15 +37,33 @@ export class StockComponent implements OnInit {
 
   stockList: GroupedStock[] = [];
   error = '';
-  expanded: Set<string> = new Set(); // Control colapsado por localName
+  expanded: Set<string> = new Set();
 
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    this.http.get<LocalStockFlat[]>(`${Common.url}/stock`).subscribe({
+    const token = localStorage.getItem('authToken');
+
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    this.http.get<ProductStockDate[]>(`${Common.url}/stock`, { headers }).subscribe({
       next: (data) => {
-        this.stockList = this.groupByLocal(data);
-        console.log(this.stockList);
+        const flatData: LocalStockFlat[] = [];
+
+        data.forEach(item => {
+          flatData.push({
+            localName: item.productStock.localName,
+            productName: item.productStock.productName,
+            stock: item.productStock.stock,
+            productDate: item.productStock.date,   // fecha individual del producto
+            stockDate: item.date                    // fecha de registro del pedido
+          });
+        });
+
+        this.stockList = this.groupByLocal(flatData);
       },
       error: (err) => {
         console.error(err);
@@ -53,6 +74,7 @@ export class StockComponent implements OnInit {
       }
     });
   }
+
 
   onNewStock(): void {
     this.router.navigate(['/stock/nuevo']);
@@ -76,11 +98,12 @@ export class StockComponent implements OnInit {
       grouped[entry.localName].products.push({
         productName: entry.productName,
         stock: entry.stock,
-        date: entry.date
+        productDate: entry.productDate,
+        orderDate: entry.stockDate
       });
     });
 
-    // Ordenar los productos alfabéticamente por productName dentro de cada local
+    // Ordenar productos alfabéticamente
     Object.values(grouped).forEach(group => {
       group.products.sort((a, b) => a.productName.localeCompare(b.productName));
     });
@@ -94,18 +117,6 @@ export class StockComponent implements OnInit {
       this.expanded.delete(local);
     } else {
       this.expanded.add(local);
-    }
-  }
-
-  formatFecha(fecha: string | null | undefined): string {
-    if (!fecha) return '—';
-    try {
-      const dateObj = new Date(fecha);
-      return dateObj.toLocaleDateString('es-ES', { weekday: 'long' })
-        .replace(/^\w/, c => c.toUpperCase());
-    } catch (e) {
-      console.error('Error al formatear fecha:', fecha, e);
-      return '—';
     }
   }
 

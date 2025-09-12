@@ -11,9 +11,27 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { ProductService, Product } from '../../products/product-service';
 import { Router } from '@angular/router';
+import { Common } from '../../common';
 
 export interface Local {
   name: string;
+}
+
+export interface ProductEntry {
+  quantity: number | null;
+  date: string | null;
+}
+
+export interface ProductForm {
+  productName: string;
+  entries: ProductEntry[];
+}
+
+export interface StockPayload {
+  productName: string;
+  stock: number;
+  date: string;
+  localName: string;
 }
 
 @Component({
@@ -30,7 +48,6 @@ export class NewStockComponent implements OnInit {
   loading = true;
   error = '';
   maxDate: string = new Date().toISOString().split('T')[0];
-  private apiUrl = 'http://192.168.1.35:8080/safra-stock';
 
   constructor(
     private fb: FormBuilder,
@@ -56,9 +73,8 @@ export class NewStockComponent implements OnInit {
 
     // Cargar productos
     this.productService.getProducts().subscribe({
-      next: (data) => {
+      next: (data: Product[]) => {
         this.products = data;
-        console.log('Productos cargados:', this.products.map(p => p.name));
         this.buildProductsControls();
         this.loading = false;
       },
@@ -73,8 +89,8 @@ export class NewStockComponent implements OnInit {
     });
 
     // Cargar locales
-    this.http.get<Local[]>(`${this.apiUrl}/locales`, { headers }).subscribe({
-      next: (data) => {
+    this.http.get<Local[]>(`${Common.url}/locales`, { headers }).subscribe({
+      next: (data: Local[]) => {
         this.locales = data;
       },
       error: (err) => {
@@ -89,8 +105,7 @@ export class NewStockComponent implements OnInit {
 
   private buildProductsControls(): void {
     this.productsArray.clear();
-
-    this.products.forEach((p) =>
+    this.products.forEach((p: Product) =>
       this.productsArray.push(
         this.fb.group({
           productName: [p.name],
@@ -103,21 +118,10 @@ export class NewStockComponent implements OnInit {
         })
       )
     );
-
-    console.log('FormArray products controls creados:', this.productsArray.length);
-  }
-
-  getProductsArray(): FormArray {
-    return this.form.get('products') as FormArray;
   }
 
   getEntries(i: number): FormArray {
     return this.productsArray.at(i).get('entries') as FormArray;
-  }
-
-  getEntryControls(productIndex: number) {
-    const entries = this.getEntries(productIndex);
-    return entries ? entries.controls : [];
   }
 
   addEntry(productIndex: number): void {
@@ -131,11 +135,8 @@ export class NewStockComponent implements OnInit {
 
   removeEntry(productIndex: number, entryIndex: number) {
     const entries = this.getEntries(productIndex);
-    if (entries.length > 1) {
-      entries.removeAt(entryIndex);
-    }
+    if (entries.length > 1) entries.removeAt(entryIndex);
   }
-
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -145,50 +146,47 @@ export class NewStockComponent implements OnInit {
 
     const localName = this.form.value.local;
     const token = localStorage.getItem('authToken');
-    const headers = token
-      ? new HttpHeaders({
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      })
-      : undefined;
-
-    const products = this.productsArray.value;
-    let hasValidEntry = false;
-
-    for (const product of products) {
-      for (const entry of product.entries) {
-        if (entry.quantity != null && entry.date != null) {
-          hasValidEntry = true;
-
-          const body = {
-            productName: product.productName,
-            stock: entry.quantity,
-            date: this.formatDateToDatetime(entry.date),
-            localName: localName
-          };
-
-          this.http.post(`${this.apiUrl}/stock`, body, { headers }).subscribe({
-            next: () => {
-              console.log(`Stock guardado para ${product.productName}`);
-            },
-            error: (err) => {
-              console.error(`Error guardando stock para ${product.productName}:`, err);
-              if (err.status === 401 || err.status === 403) {
-                this.router.navigate(['/login']);
-              }
-            }
-          });
-        }
-      }
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
     }
 
-    if (!hasValidEntry) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    const products: ProductForm[] = this.productsArray.value;
+    const payload: StockPayload[] = products.flatMap((product: ProductForm) =>
+      product.entries
+        .filter((entry: ProductEntry) => entry.quantity != null && entry.date != null)
+        .map((entry: ProductEntry) => ({
+          productName: product.productName,
+          stock: entry.quantity!,
+          date: this.formatDateToDatetime(entry.date!),
+          localName: localName
+        }))
+    );
+
+    if (payload.length === 0) {
       this.error = 'Debes completar al menos un producto con cantidad y fecha.';
       return;
     }
 
-    alert('Stock guardado correctamente.');
-    this.router.navigate(['/stock']);
+    this.http.post(`${Common.url}/stock/batch`, payload, { headers }).subscribe({
+      next: () => {
+        alert('Stock guardado correctamente.');
+        this.router.navigate(['/stock']);
+      },
+      error: (err) => {
+        console.error('Error guardando stock:', err);
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Ocurrió un error guardando el stock.';
+        }
+      }
+    });
   }
 
   private formatDateToDatetime(dateString: string): string {
