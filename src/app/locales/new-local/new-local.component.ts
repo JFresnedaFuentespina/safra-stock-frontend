@@ -18,6 +18,7 @@ import { Common } from '../../common';
 export class NewLocalComponent implements OnInit {
   name: string = '';
   users: any[] = [];
+  stockMinPerProduct: number = 1; // valor por defecto
   selectedUsers: any[] = [];
   searchTerm: string = '';
 
@@ -55,6 +56,7 @@ export class NewLocalComponent implements OnInit {
 
     const local = {
       name: this.name,
+      stockMinPerProduct: this.stockMinPerProduct,
       workers: this.selectedUsers
     };
 

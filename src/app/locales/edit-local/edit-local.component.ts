@@ -16,6 +16,7 @@ import { LocalDTO, LocalService } from '../local-service';
 export class EditLocalComponent implements OnInit {
   id?: number; // Id del local a editar
   name: string = '';
+  stockMinPerProduct: number = 1;
   searchTerm: string = '';
   users: User[] = [];
   selectedUsers: User[] = [];
@@ -42,10 +43,9 @@ export class EditLocalComponent implements OnInit {
 
   loadLocal(id: number) {
     this.localService.getById(id).subscribe((local: LocalDTO) => {
-      console.log("LOCAL A EDITAR: ", local);
       this.name = local.name;
-      // Marcar como seleccionados los trabajadores asignados
       this.selectedUsers = this.users.filter(u => local.workerNames.includes(u.name));
+      this.stockMinPerProduct = local.stockMinPerProduct ?? 1;
     });
   }
 
@@ -65,6 +65,7 @@ export class EditLocalComponent implements OnInit {
   onSubmit() {
     const payload = {
       name: this.name,
+      stockMinPerProduct: this.stockMinPerProduct,
       workerIds: this.selectedUsers.map(u => u.id)
     };
 

@@ -6,6 +6,7 @@ import { Common } from '../common';
 export interface LocalDTO {
     id: number;
     name: string;
+    stockMinPerProduct: number;
     workerNames: string[];
     active: boolean;
 }

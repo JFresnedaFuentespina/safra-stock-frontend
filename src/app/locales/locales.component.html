@@ -18,7 +18,6 @@
         </select>
     </div>
 
-    <!-- Tabla para md en adelante -->
     <div class="table-responsive d-none d-md-block">
         <table class="table table-hover">
             <thead class="table-light">
@@ -26,6 +25,7 @@
                     <th>ID</th>
                     <th>Nombre del local</th>
                     <th>Trabajadores</th>
+                    <th>Stock mínimo/Producto</th>
                     <th>Opciones</th>
                 </tr>
             </thead>
@@ -46,6 +46,7 @@
                             </ul>
                         </div>
                     </td>
+                    <td>{{ local.stockMinPerProduct }}</td> <!-- Mostrar valor -->
                     <td>
                         <button class="btn btn-sm btn-warning me-2" (click)="editarLocal(local.id)">
                             <i class="bi bi-pencil"></i>
@@ -64,6 +65,7 @@
             class="d-flex justify-content-center mt-3"></pagination-controls>
     </div>
 
+
     <!-- Vista tarjeta móviles -->
     <div class="d-md-none">
         <div class="row g-3">
@@ -71,8 +73,8 @@
                 *ngFor="let local of filteredLocales | paginate: {itemsPerPage: 4, currentPage: page}; let i = index">
                 <div class="card shadow-sm p-2">
                     <div class="card-body">
-                        <h5 class="card-title mb-2">{{ local.id }}</h5>
-                        <h5 class="card-title mb-2">{{ local.name }}</h5>
+                        <h5 class="card-title mb-1">{{ local.name }} (ID: {{ local.id }})</h5>
+                        <p class="mb-1">Stock mínimo/Producto: {{ local.stockMinPerProduct }}</p>
                         <div>
                             <button class="btn btn-sm btn-outline-secondary mb-2" type="button"
                                 data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseWorkersMobile' + i"
@@ -105,4 +107,5 @@
         <pagination-controls (pageChange)="page = $event"
             class="d-flex justify-content-center mt-3"></pagination-controls>
     </div>
+
 </div>
