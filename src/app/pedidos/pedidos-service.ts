@@ -62,11 +62,8 @@ export class PedidoService {
   }
 
   generarPedidoAutomatico(localName: string, productos: { productName: string, quantity: number }[]): void {
-    const payload = {
-      local: localName,
-      products: productos
-    };
-
+    console.log('Generando pedido automático', localName, productos); // <-- aquí
+    const payload = { local: localName, products: productos };
     this.http.post(`${Common.url}/orders`, payload, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         alert(`Pedido automático generado para completar mínimos en ${localName}`);
@@ -79,6 +76,7 @@ export class PedidoService {
       }
     });
   }
+
 
   sendEmailPedido(localName: string, productos: { productName: string, quantity: number }[]): void {
     const payload = {

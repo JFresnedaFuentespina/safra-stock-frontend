@@ -163,24 +163,6 @@ export class NewStockComponent implements OnInit {
 
 
   onSubmit(): void {
-
-    console.log('=== SUBMIT PRESIONADO ===');
-    console.log('Form value:', this.form.value);
-    console.log('Form valid:', this.form.valid);
-    console.log('Form errors:', this.form.errors);
-
-    // Log por cada producto y entrada
-    this.productsArray.controls.forEach((productGroup, i) => {
-      console.log(`Producto[${i}] (${productGroup.get('productName')?.value}):`);
-      const entries = (productGroup.get('entries') as FormArray).controls;
-      entries.forEach((entry, j) => {
-        console.log(
-          `  Entrada[${j}] -> quantity: ${entry.get('quantity')?.value}, date: ${entry.get('date')?.value}, errors:`,
-          entry.errors
-        );
-      });
-    });
-
     if (this.form.invalid) {
       console.warn('❌ El formulario está inválido');
       this.error = 'Por favor, completa todos los campos requeridos.';
@@ -229,20 +211,21 @@ export class NewStockComponent implements OnInit {
       this.error = 'Debes completar al menos un producto con cantidad y fecha.';
       return;
     }
-
+    console.log('Stock mínimo del local:', selectedLocal.stockMinPerProduct);
     // Detectar productos por debajo del stock mínimo
     const productosFaltantes = payload
-      .filter(p => p.stock < selectedLocal.stockMinPerProduct)
+      .filter(p => selectedLocal.stockMinPerProduct != null && p.stock < selectedLocal.stockMinPerProduct)
       .map(p => ({
         productName: p.productName,
         quantity: selectedLocal.stockMinPerProduct - p.stock
       }));
 
+    console.log('Productos que necesitan pedido automático:', productosFaltantes);
+
     if (productosFaltantes.length > 0) {
       console.warn('Se generará pedido automático para completar mínimos:', productosFaltantes);
       this.pedido.generarPedidoAutomatico(selectedLocal.name, productosFaltantes);
     }
-
 
     // Guardar en backend
     this.http.post(`${Common.url}/stock/batch`, payload, { headers }).subscribe({
