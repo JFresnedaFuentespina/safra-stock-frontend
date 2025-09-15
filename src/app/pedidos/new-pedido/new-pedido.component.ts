@@ -130,7 +130,11 @@ export class NewPedidoComponent implements OnInit {
     };
 
     this.pedidoService.newOrder(payload).subscribe({
-      next: () => this.router.navigate(['/pedidos']), // vuelve a la lista
+      next: () => {
+        this.router.navigate(['/pedidos']);
+        this.pedidoService.sendEmailPedido(this.form.value.local, productosSeleccionados);
+
+      }, // vuelve a la lista
       error: (err) => {
         console.error(err);
         this.error = 'Error al guardar el pedido.';
@@ -139,46 +143,12 @@ export class NewPedidoComponent implements OnInit {
         }
       },
     });
-    this.sendEmailPedido();
   }
 
 
   getUsersInLocal(localName: string): Observable<SimpleUser[]> {
     const params = new HttpParams().set('localName', localName);
     return this.http.get<SimpleUser[]>(`${Common.url}/users/get-users-in-local`, { params });
-  }
-
-  sendEmailPedido(): void {
-    // Filtrar productos con cantidad > 0 (igual que al crear el pedido)
-    const productosSeleccionados = this.productsArray.value
-      .filter((p: any) => p.quantity > 0)
-      .map((p: any) => ({
-        productName: p.productName,
-        quantity: p.quantity
-      }));
-
-
-    const payload = {
-      localName: this.form.value.local,  // nombre del local
-      message: 'Se ha generado un nuevo pedido para ' + this.form.value.local,
-      products: productosSeleccionados   // <-- aquí agregamos los productos
-    };
-
-    this.http.post(`${Common.url}/orders/send-order-notification`, payload).subscribe({
-      next: () => {
-        alert('Correo enviado a los trabajadores del local');
-      },
-      error: (err) => {
-        console.error('Error al enviar correo', err);
-        if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
-        }
-      }
-    });
-  }
-
-  generarPedidoAutomatico(): void {
-
   }
 
 }

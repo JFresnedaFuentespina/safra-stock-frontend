@@ -42,8 +42,11 @@ export class StockComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
-    const token = localStorage.getItem('authToken');
+    this.loadStock();
+  }
 
+  loadStock(): void {
+    const token = localStorage.getItem('authToken');
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
@@ -58,12 +61,14 @@ export class StockComponent implements OnInit {
             localName: item.productStock.localName,
             productName: item.productStock.productName,
             stock: item.productStock.stock,
-            productDate: item.productStock.date,   // fecha individual del producto
-            stockDate: item.date                    // fecha de registro del pedido
+            productDate: item.productStock.date,
+            stockDate: item.date
           });
         });
 
-        this.stockList = this.groupByLocal(flatData);
+        // Agrupar todos los registros por local, sin filtrar por fecha
+        this.stockList = this.groupByLocalAndDate(flatData);
+        console.log(this.stockList);
       },
       error: (err) => {
         console.error(err);
@@ -75,7 +80,6 @@ export class StockComponent implements OnInit {
     });
   }
 
-
   onNewStock(): void {
     this.router.navigate(['/stock/nuevo']);
   }
@@ -84,18 +88,19 @@ export class StockComponent implements OnInit {
     return 'collapse_' + localName.toLowerCase().replace(/\s+/g, '_');
   }
 
-
-  groupByLocal(data: LocalStockFlat[]): GroupedStock[] {
+  groupByLocalAndDate(data: LocalStockFlat[]): GroupedStock[] {
     const grouped: { [key: string]: GroupedStock } = {};
 
     data.forEach(entry => {
-      if (!grouped[entry.localName]) {
-        grouped[entry.localName] = {
+      // clave única por local + fecha de pedido
+      const key = entry.localName + '|' + entry.stockDate;
+      if (!grouped[key]) {
+        grouped[key] = {
           localName: entry.localName,
           products: []
         };
       }
-      grouped[entry.localName].products.push({
+      grouped[key].products.push({
         productName: entry.productName,
         stock: entry.stock,
         productDate: entry.productDate,
@@ -110,6 +115,7 @@ export class StockComponent implements OnInit {
 
     return Object.values(grouped);
   }
+
 
   formatFecha(fecha: string | null | undefined): string {
     if (!fecha) return '—';

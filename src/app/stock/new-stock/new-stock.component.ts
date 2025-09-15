@@ -12,7 +12,7 @@ import { NavbarComponent } from '../../navbar/navbar.component';
 import { ProductService, Product } from '../../products/product-service';
 import { Router } from '@angular/router';
 import { Common } from '../../common';
-import { NewPedidoComponent } from '../../pedidos/new-pedido/new-pedido.component';
+import { PedidoService } from '../../pedidos/pedidos-service';
 
 export interface Local {
   id: number;
@@ -59,6 +59,7 @@ export class NewStockComponent implements OnInit {
     private http: HttpClient,
     private productService: ProductService,
     private router: Router,
+    private pedido: PedidoService
   ) { }
 
   get productsArray(): FormArray {
@@ -229,13 +230,19 @@ export class NewStockComponent implements OnInit {
       return;
     }
 
-    // Validación de stock mínimo
-    const invalidProducts = payload.filter(p => p.stock <= selectedLocal.stockMinPerProduct);
-    if (invalidProducts.length > 0) {
-      this.error = `Los siguientes productos tienen stock menor o igual al mínimo permitido (${selectedLocal.stockMinPerProduct}): 
-      ${invalidProducts.map(p => p.productName).join(', ')}`;
-      return;
+    // Detectar productos por debajo del stock mínimo
+    const productosFaltantes = payload
+      .filter(p => p.stock < selectedLocal.stockMinPerProduct)
+      .map(p => ({
+        productName: p.productName,
+        quantity: selectedLocal.stockMinPerProduct - p.stock
+      }));
+
+    if (productosFaltantes.length > 0) {
+      console.warn('Se generará pedido automático para completar mínimos:', productosFaltantes);
+      this.pedido.generarPedidoAutomatico(selectedLocal.name, productosFaltantes);
     }
+
 
     // Guardar en backend
     this.http.post(`${Common.url}/stock/batch`, payload, { headers }).subscribe({
