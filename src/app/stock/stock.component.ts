@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { Common } from '../common';
 import { ProductStockDate } from './product-stock-date';
@@ -28,7 +29,7 @@ interface GroupedStock {
 @Component({
   selector: 'app-stock',
   standalone: true,
-  imports: [NavbarComponent, CommonModule],
+  imports: [NavbarComponent, CommonModule, FormsModule],
   templateUrl: './stock.component.html',
   styleUrl: './stock.component.css'
 })
@@ -36,8 +37,14 @@ interface GroupedStock {
 export class StockComponent implements OnInit {
 
   stockList: GroupedStock[] = [];
+  filteredStockList: GroupedStock[] = [];
   error = '';
   expanded: Set<string> = new Set();
+
+  locales: string[] = [];                    // lista de locales disponibles
+  filterLocal: string = '';                  // local seleccionado
+  filterStartDate: string = '';              // fecha inicio
+  filterEndDate: string = '';                // fecha fin
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -48,9 +55,7 @@ export class StockComponent implements OnInit {
   loadStock(): void {
     const token = localStorage.getItem('authToken');
     let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
 
     this.http.get<ProductStockDate[]>(`${Common.url}/stock`, { headers }).subscribe({
       next: (data) => {
@@ -66,17 +71,39 @@ export class StockComponent implements OnInit {
           });
         });
 
-        // Agrupar todos los registros por local, sin filtrar por fecha
         this.stockList = this.groupByLocalAndDate(flatData);
+        this.filteredStockList = [...this.stockList];
+
+        // extraer locales únicos
+        this.locales = Array.from(new Set(flatData.map(f => f.localName))).sort();
+
         console.log(this.stockList);
       },
       error: (err) => {
         console.error(err);
         this.error = 'Error al cargar el stock';
-        if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
-        }
+        if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
       }
+    });
+  }
+
+  applyFilters(): void {
+    this.filteredStockList = this.stockList.filter(group => {
+      let matchesLocal = true;
+      let matchesDate = true;
+
+      if (this.filterLocal) {
+        matchesLocal = group.localName === this.filterLocal;
+      }
+
+      if (this.filterStartDate) {
+        matchesDate = group.products.some(p => new Date(p.orderDate) >= new Date(this.filterStartDate));
+      }
+      if (matchesDate && this.filterEndDate) {
+        matchesDate = group.products.some(p => new Date(p.orderDate) <= new Date(this.filterEndDate));
+      }
+
+      return matchesLocal && matchesDate;
     });
   }
 
@@ -89,7 +116,7 @@ export class StockComponent implements OnInit {
   }
 
   groupByLocalAndDate(data: LocalStockFlat[]): GroupedStock[] {
-    const grouped: { [key: string]: GroupedStock } = {};
+    const grouped: { [key: string]: GroupedStock & { stockDate: string } } = {};
 
     data.forEach(entry => {
       // clave única por local + fecha de pedido
@@ -97,7 +124,8 @@ export class StockComponent implements OnInit {
       if (!grouped[key]) {
         grouped[key] = {
           localName: entry.localName,
-          products: []
+          products: [],
+          stockDate: entry.stockDate // guardamos la fecha para poder ordenar
         };
       }
       grouped[key].products.push({
@@ -108,13 +136,17 @@ export class StockComponent implements OnInit {
       });
     });
 
-    // Ordenar productos alfabéticamente
+    // Ordenar productos alfabéticamente dentro de cada grupo
     Object.values(grouped).forEach(group => {
       group.products.sort((a, b) => a.productName.localeCompare(b.productName));
     });
 
-    return Object.values(grouped);
+    // Convertir a array y ordenar grupos por stockDate descendente (más recientes primero)
+    return Object.values(grouped).sort((a, b) => {
+      return new Date(b.stockDate).getTime() - new Date(a.stockDate).getTime();
+    });
   }
+
 
 
   formatFecha(fecha: string | null | undefined): string {

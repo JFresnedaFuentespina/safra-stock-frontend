@@ -10,8 +10,36 @@
 
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
+    <!-- FILTROS -->
+    <div class="row mb-3 g-2 align-items-end">
+        <div class="col-md-3">
+            <label>Local</label>
+            <select class="form-select" [(ngModel)]="filterLocal" (change)="applyFilters()">
+                <option value="">Todos</option>
+                <option *ngFor="let l of locales" [value]="l">{{ l }}</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label>Fecha inicio</label>
+            <input type="date" class="form-control" [(ngModel)]="filterStartDate" (change)="applyFilters()">
+        </div>
+
+        <div class="col-md-3">
+            <label>Fecha fin</label>
+            <input type="date" class="form-control" [(ngModel)]="filterEndDate" (change)="applyFilters()">
+        </div>
+
+        <div class="col-md-3 d-flex align-items-center mt-2 mt-md-0">
+            <button class="btn btn-secondary w-100"
+                (click)="filterLocal=''; filterStartDate=''; filterEndDate=''; applyFilters()">
+                Limpiar filtros
+            </button>
+        </div>
+    </div>
+
     <!-- Tabla para pantallas md y superiores -->
-    <div class="table-responsive d-none d-md-block" *ngIf="stockList?.length">
+    <div class="table-responsive d-none d-md-block" *ngIf="filteredStockList?.length">
         <table class="table table-hover">
             <thead class="table-light">
                 <tr>
@@ -21,7 +49,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let stock of stockList; let i = index">
+                <tr *ngFor="let stock of filteredStockList; let i = index">
                     <td>{{ stock.localName }}</td>
 
                     <!-- Botón para desplegar productos -->
@@ -53,13 +81,15 @@
     </div>
 
     <!-- Vista tipo tarjeta para móviles -->
-    <div class="d-md-none" *ngIf="stockList?.length">
+    <div class="d-md-none" *ngIf="filteredStockList?.length">
         <div class="row g-3">
-            <div class="col-12" *ngFor="let stock of stockList; let i = index">
+            <div class="col-12" *ngFor="let stock of filteredStockList; let i = index">
                 <div class="card shadow-sm p-2">
                     <div class="card-body">
                         <h5 class="card-title mb-2">{{ stock.localName }}</h5>
-                        <h5 class="card-title mb-2">{{ formatFecha(stock.products[0].orderDate) }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            Fecha pedido: {{ formatFecha(stock.products[0].orderDate) }}
+                        </h6>
 
                         <button class="btn btn-sm btn-outline-secondary mb-2 w-100" type="button"
                             data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseProductsMobile' + i"
@@ -71,7 +101,7 @@
                                 <li *ngFor="let p of stock.products" class="list-group-item d-flex flex-column gap-1">
                                     <div><strong>{{ p.productName }}</strong></div>
                                     <div>Cantidad: {{ p.stock }}</div>
-                                    <div>{{ formatFecha(p.productDate) }}</div>
+                                    <div>Fecha producto: {{ formatFecha(p.productDate) }}</div>
                                 </li>
                             </ul>
                         </div>
@@ -81,7 +111,7 @@
         </div>
     </div>
 
-    <div *ngIf="!stockList?.length && !error" class="alert alert-secondary mt-3">
+    <div *ngIf="!filteredStockList?.length && !error" class="alert alert-secondary mt-3">
         No hay stock disponible.
     </div>
 </div>
