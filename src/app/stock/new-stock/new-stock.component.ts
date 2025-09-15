@@ -12,9 +12,14 @@ import { NavbarComponent } from '../../navbar/navbar.component';
 import { ProductService, Product } from '../../products/product-service';
 import { Router } from '@angular/router';
 import { Common } from '../../common';
+import { NewPedidoComponent } from '../../pedidos/new-pedido/new-pedido.component';
 
 export interface Local {
+  id: number;
   name: string;
+  active: boolean;
+  workers: string[];
+  stockMinPerProduct: number;
 }
 
 export interface ProductEntry {
@@ -53,7 +58,7 @@ export class NewStockComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private productService: ProductService,
-    private router: Router
+    private router: Router,
   ) { }
 
   get productsArray(): FormArray {
@@ -65,6 +70,7 @@ export class NewStockComponent implements OnInit {
       local: ['', Validators.required],
       products: this.fb.array([])
     });
+
 
     const token = localStorage.getItem('authToken');
     const headers = token
@@ -111,9 +117,9 @@ export class NewStockComponent implements OnInit {
           productName: [p.name],
           entries: this.fb.array([
             this.fb.group({
-              quantity: [null, [Validators.required, Validators.min(0)]],
-              date: [null, Validators.required]
-            })
+              quantity: [0, [Validators.required, Validators.min(0)]],
+              date: [null]
+            }, { validators: this.dateRequiredIfQuantityNotZero })
           ])
         })
       )
@@ -125,26 +131,70 @@ export class NewStockComponent implements OnInit {
   }
 
   addEntry(productIndex: number): void {
-    this.getEntries(productIndex).push(
-      this.fb.group({
-        quantity: [null, [Validators.required, Validators.min(0)]],
-        date: [null, Validators.required]
-      })
+    const productGroup = this.productsArray.at(productIndex) as FormGroup;
+    const entries = productGroup.get('entries') as FormArray;
+    entries.push(
+      this.fb.group(
+        {
+          quantity: [0, [Validators.required, Validators.min(0)]],
+          date: [null]
+        },
+        { validators: this.dateRequiredIfQuantityNotZero }
+      )
     );
   }
+
 
   removeEntry(productIndex: number, entryIndex: number) {
     const entries = this.getEntries(productIndex);
     if (entries.length > 1) entries.removeAt(entryIndex);
   }
 
+  dateRequiredIfQuantityNotZero(group: FormGroup) {
+    const quantity = group.get('quantity')?.value;
+    const date = group.get('date')?.value;
+
+    if (quantity > 0 && !date) {
+      return { dateRequired: true };
+    }
+    return null;
+  }
+
+
   onSubmit(): void {
+
+    console.log('=== SUBMIT PRESIONADO ===');
+    console.log('Form value:', this.form.value);
+    console.log('Form valid:', this.form.valid);
+    console.log('Form errors:', this.form.errors);
+
+    // Log por cada producto y entrada
+    this.productsArray.controls.forEach((productGroup, i) => {
+      console.log(`Producto[${i}] (${productGroup.get('productName')?.value}):`);
+      const entries = (productGroup.get('entries') as FormArray).controls;
+      entries.forEach((entry, j) => {
+        console.log(
+          `  Entrada[${j}] -> quantity: ${entry.get('quantity')?.value}, date: ${entry.get('date')?.value}, errors:`,
+          entry.errors
+        );
+      });
+    });
+
     if (this.form.invalid) {
+      console.warn('❌ El formulario está inválido');
       this.error = 'Por favor, completa todos los campos requeridos.';
       return;
     }
 
     const localName = this.form.value.local;
+    const selectedLocal = this.locales.find(l => l.name === localName);
+
+
+    if (!selectedLocal) {
+      this.error = 'Debes seleccionar un local válido.';
+      return;
+    }
+
     const token = localStorage.getItem('authToken');
     if (!token) {
       this.router.navigate(['/login']);
@@ -159,20 +209,35 @@ export class NewStockComponent implements OnInit {
     const products: ProductForm[] = this.productsArray.value;
     const payload: StockPayload[] = products.flatMap((product: ProductForm) =>
       product.entries
-        .filter((entry: ProductEntry) => entry.quantity != null && entry.date != null)
+        .filter((entry: ProductEntry) =>
+          entry.quantity != null &&
+          (entry.quantity === 0 || entry.date != null)
+        )
         .map((entry: ProductEntry) => ({
           productName: product.productName,
           stock: entry.quantity!,
-          date: this.formatDateToDatetime(entry.date!),
-          localName: localName
+          date: entry.quantity === 0
+            ? this.formatDateToDatetime(new Date().toISOString().split('T')[0]) // si quieres asignar fecha por defecto
+            : this.formatDateToDatetime(entry.date!),
+          localName: selectedLocal.name
         }))
     );
+
 
     if (payload.length === 0) {
       this.error = 'Debes completar al menos un producto con cantidad y fecha.';
       return;
     }
 
+    // Validación de stock mínimo
+    const invalidProducts = payload.filter(p => p.stock <= selectedLocal.stockMinPerProduct);
+    if (invalidProducts.length > 0) {
+      this.error = `Los siguientes productos tienen stock menor o igual al mínimo permitido (${selectedLocal.stockMinPerProduct}): 
+      ${invalidProducts.map(p => p.productName).join(', ')}`;
+      return;
+    }
+
+    // Guardar en backend
     this.http.post(`${Common.url}/stock/batch`, payload, { headers }).subscribe({
       next: () => {
         alert('Stock guardado correctamente.');
@@ -188,6 +253,7 @@ export class NewStockComponent implements OnInit {
       }
     });
   }
+
 
   private formatDateToDatetime(dateString: string): string {
     return `${dateString}T00:00:00`;

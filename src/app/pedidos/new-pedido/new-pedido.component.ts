@@ -177,4 +177,8 @@ export class NewPedidoComponent implements OnInit {
     });
   }
 
+  generarPedidoAutomatico(): void {
+
+  }
+
 }
