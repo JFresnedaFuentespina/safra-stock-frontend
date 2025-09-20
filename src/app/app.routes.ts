@@ -17,6 +17,8 @@ import { AccountComponent } from './account/account.component';
 import { EditProductComponent } from './products/edit-product/edit-product.component';
 import { EditPedidoComponent } from './pedidos/edit-pedido/edit-pedido.component';
 import { EditLocalComponent } from './locales/edit-local/edit-local.component';
+import { DiscardedProductsComponent } from './discarded-products/discarded-products.component';
+import { NewDiscardedProductComponent } from './discarded-products/new-discarded-products/new-discarded-product.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -28,6 +30,8 @@ export const routes: Routes = [
   { path: 'pedidos', component: PedidosComponent },
   { path: 'pedidos/nuevo', component: NewPedidoComponent },
   { path: 'pedidos/editar/:id', component: EditPedidoComponent },
+  { path: 'desperdicios', component: DiscardedProductsComponent },
+  { path: 'desperdicios/nuevo', component: NewDiscardedProductComponent },
   { path: 'users', component: UsersComponent },
   { path: 'users/nuevo', component: NewUserComponent },
   { path: 'locales', component: LocalesComponent },

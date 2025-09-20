@@ -1,0 +1,82 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        Productos descartados
+    </h2>
+    <button class="btn btn-primary" (click)="crearNuevoRegistro()">
+        Nuevo Descarte
+    </button>
+    <!-- Vista tabla (escritorio) -->
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Local</th>
+                    <th>Fecha</th>
+                    <th>Razón</th>
+                    <th>Productos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    *ngFor="let disposal of discardedProducts | paginate: { itemsPerPage: 5, currentPage: page }; let i = index">
+                    <td>{{ disposal.id }}</td>
+                    <td>{{ disposal.local?.name }}</td>
+                    <td>{{ disposal.disposalDate | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ disposal.reason }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseProducts' + i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseProducts' + i">
+                            Ver productos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseProducts' + i">
+                            <ul class="mb-0 list-unstyled">
+                                <li *ngFor="let p of disposal.products">
+                                    {{ p.product?.name }} ({{ p.quantity }})
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+
+    <!-- Vista móvil (tarjetas) -->
+    <div class="d-md-none">
+        <div class="row g-3">
+            <div class="col-12"
+                *ngFor="let disposal of discardedProducts | paginate: { itemsPerPage: 4, currentPage: page }; let i = index">
+                <div class="card shadow-sm p-2">
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">ID: {{ disposal.id }} - {{ disposal.local?.name }}</h5>
+                        <p class="mb-1">Fecha: {{ disposal.disposalDate | date:'dd/MM/yyyy' }}</p>
+                        <p class="mb-1">Razón: {{ disposal.reason }}</p>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary mb-2" type="button"
+                                data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseProductsMobile' + i"
+                                aria-expanded="false" [attr.aria-controls]="'collapseProductsMobile' + i">
+                                Ver productos
+                            </button>
+                            <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
+                                <ul class="mb-0 list-unstyled">
+                                    <li *ngFor="let p of disposal.products">
+                                        {{ p.product?.name }} ({{ p.quantity }})
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pagination-controls (pageChange)="page = $event"
+            class="d-flex justify-content-center mt-3"></pagination-controls>
+    </div>
+
+</div>

@@ -37,6 +37,10 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(["/pedidos"]);
   }
 
+  goToDesperdicios() {
+    this.router.navigate(["/desperdicios"]);
+  }
+
   goToUsuarios() {
     this.router.navigate(["/users"]);
   }
@@ -56,4 +60,5 @@ export class NavbarComponent implements OnInit {
   goToCuenta() {
     this.router.navigate(['/cuenta']);
   }
+
 }

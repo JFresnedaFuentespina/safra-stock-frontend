@@ -1,0 +1,51 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 text-center">Nuevo Producto Descartado</h2>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="guardarDescarte()">
+
+        <!-- Selección de local -->
+        <div class="mb-3">
+            <label for="localSelect" class="form-label">Local:</label>
+            <select id="localSelect" formControlName="localId" class="form-select" required>
+                <option value="" disabled selected>--Seleccione--</option>
+                <option *ngFor="let local of locales" [value]="local.id">
+                    {{ local.name }}
+                </option>
+            </select>
+        </div>
+
+        <!-- Fecha de descarte -->
+        <div class="mb-3">
+            <label for="disposalDate" class="form-label">Fecha de descarte:</label>
+            <input type="date" id="disposalDate" class="form-control" formControlName="disposalDate" required>
+        </div>
+
+        <!-- Razón -->
+        <div class="mb-3">
+            <label for="reason" class="form-label">Razón:</label>
+            <input type="text" id="reason" class="form-control" formControlName="reason" required>
+        </div>
+
+        <!-- Productos -->
+        <div formArrayName="products">
+            <div *ngFor="let productCtrl of products.controls; let i = index" [formGroupName]="i"
+                class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ productCtrl.get('productName')?.value }}</h5>
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Cantidad a descartar:</label>
+                            <input type="number" class="form-control" formControlName="quantity" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Descarte</button>
+    </form>
+</div>
