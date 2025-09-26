@@ -96,14 +96,23 @@ export class EditDiscardedProductsComponent implements OnInit {
     });
   }
 
-  /** Añadir un producto nuevo al FormArray */
-  addProduct(product: any) {
-    // Evitar duplicados
-    const exists = this.products.controls.some(ctrl => ctrl.value.productId === product.id);
+  /** Filtra productos disponibles para que no aparezcan los ya añadidos */
+  productosDisponiblesFiltrados() {
+    const idsAñadidos = this.products.controls.map(c => c.value.productId);
+    return this.productosDisponibles.filter(p => !idsAñadidos.includes(p.id));
+  }
+
+  /** Añadir producto usando solo el ID */
+  addProductById(productId: number | string) {
+    const idNum = Number(productId);
+    const producto = this.productosDisponibles.find(p => p.id === idNum);
+    if (!producto) return;
+
+    const exists = this.products.controls.some(ctrl => ctrl.value.productId === idNum);
     if (!exists) {
       this.products.push(this.fb.group({
-        productId: [product.id],
-        productName: [product.name],
+        productId: [producto.id],
+        productName: [producto.name],
         quantity: [0, [Validators.required, Validators.min(0)]]
       }));
     }
@@ -143,6 +152,4 @@ export class EditDiscardedProductsComponent implements OnInit {
       }
     });
   }
-
 }
-

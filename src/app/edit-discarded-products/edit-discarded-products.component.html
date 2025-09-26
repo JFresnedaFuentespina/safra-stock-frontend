@@ -30,7 +30,7 @@
             <input type="text" id="reason" class="form-control" formControlName="reason" required>
         </div>
 
-        <!-- Productos -->
+        <!-- Productos existentes -->
         <div formArrayName="products">
             <div *ngFor="let productCtrl of products.controls; let i = index" [formGroupName]="i"
                 class="card mb-3 shadow-sm">
@@ -41,11 +41,22 @@
                             <label class="form-label">Cantidad a descartar:</label>
                             <input type="number" class="form-control" formControlName="quantity" min="0">
                         </div>
+                        <div class="col-12 col-md-6 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger" (click)="removeProduct(i)">Eliminar</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Añadir nuevo producto -->
+        <div class="mb-3 d-flex gap-2 align-items-end">
+            <select #newProductId class="form-select">
+                <option *ngFor="let p of productosDisponiblesFiltrados()" [value]="p.id">{{ p.name }}</option>
+            </select>
+            <button type="button" class="btn btn-primary" (click)="addProductById(newProductId.value)">Añadir
+                Producto</button>
+        </div>
         <button type="submit" class="btn btn-primary w-100 mt-3">Actualizar Descarte</button>
     </form>
 </div>
