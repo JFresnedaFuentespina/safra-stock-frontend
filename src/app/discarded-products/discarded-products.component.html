@@ -1,13 +1,24 @@
 <app-navbar></app-navbar>
 
 <div class="container mt-4">
-    <h2 class="my-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <h2 class="my-4 d-flex justify-content-between align-items-center gap-2">
         Productos descartados
+        <button class="btn btn-primary flex-shrink-0" (click)="crearNuevoRegistro()">
+            Nuevo Descarte
+        </button>
     </h2>
-    <button class="btn btn-primary" (click)="crearNuevoRegistro()">
-        Nuevo Descarte
-    </button>
-    <!-- Vista tabla (escritorio) -->
+
+    <!-- Selector de estado -->
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <label for="filterStatus" class="form-label mb-0">Mostrar:</label>
+        <select id="filterStatus" class="form-select w-auto" [(ngModel)]="filterStatus">
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="all">Todos</option>
+        </select>
+    </div>
+
+    <!-- Tabla escritorio -->
     <div class="table-responsive d-none d-md-block">
         <table class="table table-hover">
             <thead class="table-light">
@@ -17,11 +28,12 @@
                     <th>Fecha</th>
                     <th>Razón</th>
                     <th>Productos</th>
+                    <th>Opciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    *ngFor="let disposal of discardedProducts | paginate: { itemsPerPage: 5, currentPage: page }; let i = index">
+                    *ngFor="let disposal of filteredDiscarded | paginate:{ itemsPerPage:5, currentPage:page }; let i = index">
                     <td>{{ disposal.id }}</td>
                     <td>{{ disposal.local?.name }}</td>
                     <td>{{ disposal.disposalDate | date:'dd/MM/yyyy' }}</td>
@@ -40,36 +52,61 @@
                             </ul>
                         </div>
                     </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" (click)="editarDescarte(disposal)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button *ngIf="disposal.active" class="btn btn-sm btn-danger"
+                            (click)="desactivarDescarte(disposal.id)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button *ngIf="!disposal.active" class="btn btn-sm btn-success"
+                            (click)="activarDescarte(disposal.id)">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
+
         <pagination-controls (pageChange)="page = $event"
             class="d-flex justify-content-center mt-3"></pagination-controls>
     </div>
 
-    <!-- Vista móvil (tarjetas) -->
+    <!-- Tarjetas móvil -->
     <div class="d-md-none">
         <div class="row g-3">
             <div class="col-12"
-                *ngFor="let disposal of discardedProducts | paginate: { itemsPerPage: 4, currentPage: page }; let i = index">
+                *ngFor="let disposal of filteredDiscarded | paginate:{ itemsPerPage:4, currentPage:page }; let i = index">
                 <div class="card shadow-sm p-2">
                     <div class="card-body">
                         <h5 class="card-title mb-1">ID: {{ disposal.id }} - {{ disposal.local?.name }}</h5>
                         <p class="mb-1">Fecha: {{ disposal.disposalDate | date:'dd/MM/yyyy' }}</p>
                         <p class="mb-1">Razón: {{ disposal.reason }}</p>
-                        <div>
-                            <button class="btn btn-sm btn-outline-secondary mb-2" type="button"
-                                data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseProductsMobile' + i"
-                                aria-expanded="false" [attr.aria-controls]="'collapseProductsMobile' + i">
-                                Ver productos
+                        <button class="btn btn-sm btn-outline-secondary mb-2" type="button" data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseProductsMobile' + i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseProductsMobile' + i">
+                            Ver productos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
+                            <ul class="mb-0 list-unstyled">
+                                <li *ngFor="let p of disposal.products">
+                                    {{ p.product?.name }} ({{ p.quantity }})
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-end gap-2">
+                            <button class="btn btn-sm btn-warning" (click)="editarDescarte(disposal)">
+                                <i class="bi bi-pencil"></i>
                             </button>
-                            <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
-                                <ul class="mb-0 list-unstyled">
-                                    <li *ngFor="let p of disposal.products">
-                                        {{ p.product?.name }} ({{ p.quantity }})
-                                    </li>
-                                </ul>
-                            </div>
+                            <button *ngIf="disposal.active" class="btn btn-sm btn-danger flex-fill"
+                                (click)="desactivarDescarte(disposal.id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button *ngIf="!disposal.active" class="btn btn-sm btn-success flex-fill"
+                                (click)="activarDescarte(disposal.id)">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -78,5 +115,4 @@
         <pagination-controls (pageChange)="page = $event"
             class="d-flex justify-content-center mt-3"></pagination-controls>
     </div>
-
 </div>

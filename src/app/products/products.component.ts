@@ -50,7 +50,7 @@ export class ProductsComponent {
     } else if (this.filterStatus === 'inactive') {
       return this.products.filter(p => !p.active);
     } else {
-      return this.products; // todos
+      return this.products;
     }
   }
 
@@ -95,7 +95,6 @@ export class ProductsComponent {
   onEnableProduct(id: number) {
     this.productService.enableProduct(id).subscribe({
       next: () => {
-        // Igual que en pedidos: lo marcamos como activo otra vez
         this.products = this.products.map(p =>
           p.id === id ? { ...p, active: true } : p
         );
