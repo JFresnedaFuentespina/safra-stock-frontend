@@ -1,38 +1,110 @@
 <app-navbar></app-navbar>
+
 <div class="container py-4">
-    <h2 class="text-center mb-4">Estadísticas de Pedidos</h2>
+    <h2 class="text-center mb-5 fw-bold">Estadísticas de Pedidos y Descartes</h2>
 
-    <div class="graficos-grid">
-        <!-- Productos más pedidos -->
-        <div class="grafico-container">
-            <h4>Productos más pedidos</h4>
-            <canvas baseChart [data]="datosProductosMasPedidos" [options]="opcionesGrafico" [type]="'bar'">
-            </canvas>
+    <div class="row g-4">
+        <!-- Gráfico Productos más pedidos -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Productos más pedidos</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros fechas pedidos -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Desde:</label>
+                            <input type="date" [(ngModel)]="fechaPedidosDesde" (change)="filtrarPedidos()"
+                                class="form-control">
+                        </div>
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Hasta:</label>
+                            <input type="date" [(ngModel)]="fechaPedidosHasta" (change)="filtrarPedidos()"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <canvas baseChart [data]="datosProductosMasPedidos" [options]="opcionesGrafico"
+                        [type]="'bar'"></canvas>
+                </div>
+            </div>
         </div>
 
-        <!-- Locales con más pedidos -->
-        <div class="grafico-container">
-            <h4>Locales con más pedidos</h4>
-            <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'">
-            </canvas>
+        <!-- Gráfico Locales con más pedidos -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Locales con más pedidos</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros fechas pedidos -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Desde:</label>
+                            <input type="date" [(ngModel)]="fechaPedidosDesde" (change)="filtrarPedidos()"
+                                class="form-control">
+                        </div>
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Hasta:</label>
+                            <input type="date" [(ngModel)]="fechaPedidosHasta" (change)="filtrarPedidos()"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'"></canvas>
+                </div>
+            </div>
         </div>
 
-        <!-- Comparativa por local -->
-        <div *ngIf="datosRadarPorLocal?.labels?.length" class="grafico-container">
-            <h4>Comparativa de productos por local</h4>
-            <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'" width="300"
-                height="300">
-            </canvas>
-        </div>
-        <div class="grafico-container">
-            <h4>Productos más descartados</h4>
-            <canvas baseChart [data]="datosProductosMasDescartados" [options]="opcionesGrafico" [type]="'bar'"></canvas>
+        <!-- Gráfico Productos más descartados -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Productos más descartados</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros fechas descartes -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Desde:</label>
+                            <input type="date" [(ngModel)]="fechaDescartesDesde" (change)="filtrarDescartes()"
+                                class="form-control">
+                        </div>
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Hasta:</label>
+                            <input type="date" [(ngModel)]="fechaDescartesHasta" (change)="filtrarDescartes()"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <canvas baseChart [data]="datosProductosMasDescartados" [options]="opcionesGrafico"
+                        [type]="'bar'"></canvas>
+                </div>
+            </div>
         </div>
 
-        <div class="grafico-container">
-            <h4>Locales con más descartes</h4>
-            <canvas baseChart [data]="datosLocalesDescartes" [options]="opcionesGrafico" [type]="'doughnut'"></canvas>
+        <!-- Gráfico Locales con más descartes -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Locales con más descartes</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros fechas descartes -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Desde:</label>
+                            <input type="date" [(ngModel)]="fechaDescartesDesde" (change)="filtrarDescartes()"
+                                class="form-control">
+                        </div>
+                        <div class="col-12 col-sm-auto d-flex align-items-center gap-2 flex-wrap">
+                            <label class="mb-0">Hasta:</label>
+                            <input type="date" [(ngModel)]="fechaDescartesHasta" (change)="filtrarDescartes()"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <canvas baseChart [data]="datosLocalesDescartes" [options]="opcionesGrafico"
+                        [type]="'doughnut'"></canvas>
+                </div>
+            </div>
         </div>
-
     </div>
 </div>

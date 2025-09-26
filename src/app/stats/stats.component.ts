@@ -6,45 +6,32 @@ import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { Router } from '@angular/router';
 import { Common } from '../common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [NavbarComponent, CommonModule, NgChartsModule],
+  imports: [NavbarComponent, CommonModule, NgChartsModule, FormsModule],
   templateUrl: './stats.component.html',
   styleUrl: './stats.component.css'
 })
 export class StatsComponent implements OnInit {
-  orders: any[] = [];
 
-  productosLabels: string[] = [];
-  productosData: number[] = [];
+  // Datos originales
+  pedidosOriginales: any[] = [];
+  descartesOriginales: any[] = [];
 
-  localesLabels: string[] = [];
-  localesData: number[] = [];
+  // Filtros de fechas
+  fechaPedidosDesde: string = '';
+  fechaPedidosHasta: string = '';
+  fechaDescartesDesde: string = '';
+  fechaDescartesHasta: string = '';
 
-  groupedData: { [local: string]: { [product: string]: number } } = {};
-  groupedChartLabels: string[] = [];
-  groupedChartDatasets: any[] = [];
-
-  datosProductosMasPedidos: ChartConfiguration<'bar'>['data'] = {
-    labels: [],
-    datasets: []
-  };
-
-  datosLocales: ChartConfiguration<'doughnut'>['data'] = {
-    labels: [],
-    datasets: []
-  };
-
-  datosRadarPorLocal: ChartConfiguration<'radar'>['data'] = {
-    labels: [],
-    datasets: []
-  };
-  
+  // Gráficos
+  datosProductosMasPedidos: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
+  datosLocales: ChartConfiguration<'doughnut'>['data'] = { labels: [], datasets: [] };
   datosProductosMasDescartados: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
   datosLocalesDescartes: ChartConfiguration<'doughnut'>['data'] = { labels: [], datasets: [] };
-
 
   opcionesGrafico: ChartOptions = {
     responsive: true,
@@ -55,39 +42,63 @@ export class StatsComponent implements OnInit {
     }
   };
 
-
-
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
+    // Cargar pedidos
     this.http.get<any[]>(`${Common.url}/orders`).subscribe({
       next: (data) => {
-        this.orders = data.filter(o => o.active === true);
-        this.procesarDatos(this.orders);
+        this.pedidosOriginales = data.filter(o => o.active === true);
+        console.log('Pedidos cargados:', this.pedidosOriginales); // <-- log de depuración
+        this.filtrarPedidos();
       },
       error: (err) => {
         console.error('Error al obtener pedidos:', err);
-        if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
-        }
+        if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
       }
     });
+
+    // Cargar descartes
     this.http.get<any[]>(`${Common.url}/discarded`).subscribe({
       next: (data) => {
-        const descartesActivos = data.filter(d => d.active === true);
-        this.procesarDatosDescartes(descartesActivos);
+        this.descartesOriginales = data.filter(d => d.active === true);
+        console.log('Descartes cargados:', this.descartesOriginales); // <-- log de depuración
+        this.filtrarDescartes();
       },
       error: (err) => {
         console.error('Error al obtener descartes:', err);
-        if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
-        }
+        if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
       }
     });
-
   }
 
-  procesarDatos(orders: any[]): void {
+  filtrarPedidos() {
+    let filtrados = this.pedidosOriginales;
+
+    if (this.fechaPedidosDesde) {
+      const desde = new Date(this.fechaPedidosDesde);
+      filtrados = filtrados.filter(p => new Date(p.date) >= desde);
+    }
+
+    if (this.fechaPedidosHasta) {
+      const hasta = new Date(this.fechaPedidosHasta);
+      filtrados = filtrados.filter(p => new Date(p.date) <= hasta);
+    }
+    this.procesarDatosPedidos(filtrados);
+  }
+
+
+  filtrarDescartes() {
+    let filtrados = this.descartesOriginales;
+    if (this.fechaDescartesDesde) filtrados = filtrados.filter(d => new Date(d.disposalDate) >= new Date(this.fechaDescartesDesde));
+    if (this.fechaDescartesHasta) filtrados = filtrados.filter(d => new Date(d.disposalDate) <= new Date(this.fechaDescartesHasta));
+    this.procesarDatosDescartes(filtrados);
+  }
+
+  // -------------------
+  // Pedidos
+  // -------------------
+  procesarDatosPedidos(orders: any[]) {
     const productoPorLocal: { [producto: string]: { [local: string]: number } } = {};
     const localesSet = new Set<string>();
     const productosSet = new Set<string>();
@@ -95,19 +106,13 @@ export class StatsComponent implements OnInit {
     for (const order of orders) {
       const local = order.local;
       const productos = Array.isArray(order.products) ? order.products : [];
-
       localesSet.add(local);
 
       for (const producto of productos) {
         const nombre = producto.productName;
         const cantidad = producto.quantity;
-
         productosSet.add(nombre);
-
-        if (!productoPorLocal[nombre]) {
-          productoPorLocal[nombre] = {};
-        }
-
+        if (!productoPorLocal[nombre]) productoPorLocal[nombre] = {};
         productoPorLocal[nombre][local] = (productoPorLocal[nombre][local] || 0) + cantidad;
       }
     }
@@ -115,86 +120,38 @@ export class StatsComponent implements OnInit {
     const productos = Array.from(productosSet).slice(0, 5);
     const locales = Array.from(localesSet);
 
-    // Preparar datasets: un dataset por local
-    const datasets = locales.map(local => {
-      return {
-        label: local,
-        data: productos.map(producto => productoPorLocal[producto]?.[local] || 0),
-        backgroundColor: this.getColorForLocal(local)
-      };
-    });
-
     this.datosProductosMasPedidos = {
       labels: productos,
-      datasets: datasets
+      datasets: locales.map(local => ({
+        label: local,
+        data: productos.map(p => productoPorLocal[p]?.[local] || 0),
+        backgroundColor: this.getColorForLocal(local)
+      }))
     };
 
-    // Locales más activos por número de pedidos (no productos)
+    // Locales con más pedidos
     const pedidosPorLocal: { [local: string]: number } = {};
     for (const order of orders) {
       const local = order.local;
       pedidosPorLocal[local] = (pedidosPorLocal[local] || 0) + 1;
     }
 
-    const localesOrdenados = Object.entries(pedidosPorLocal)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
+    const localesOrdenados = Object.entries(pedidosPorLocal).sort((a, b) => b[1] - a[1]).slice(0, 5);
     this.datosLocales = {
       labels: localesOrdenados.map(([local]) => local),
-      datasets: [
-        {
-          label: 'Pedidos realizados',
-          data: localesOrdenados.map(([, cantidad]) => cantidad),
-          backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF'
-          ],
-          borderWidth: 1,
-        },
-      ],
+      datasets: [{
+        label: 'Pedidos realizados',
+        data: localesOrdenados.map(([, cantidad]) => cantidad),
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+        borderWidth: 1
+      }]
     };
   }
 
-  getColorForLocal(local: string): string {
-    const colores = [
-      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-      '#FF9F40', '#C9CBCF', '#8BC34A', '#E91E63', '#03A9F4'
-    ];
-    const hash = Array.from(local).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colores[hash % colores.length];
-  }
-
-  generarDatasetAgrupado(): void {
-    const productos = new Set<string>();
-    const locales = Object.keys(this.groupedData);
-    for (const local of locales) {
-      for (const prod of Object.keys(this.groupedData[local])) {
-        productos.add(prod);
-      }
-    }
-
-    this.groupedChartLabels = Array.from(productos);
-    this.groupedChartDatasets = locales.map(local => {
-      return {
-        label: local,
-        data: this.groupedChartLabels.map(prod => this.groupedData[local][prod] || 0)
-      };
-    });
-  }
-
-  barChartOptions: ChartOptions<'bar'> = {
-    responsive: true
-  };
-
-  pieChartOptions: ChartOptions<'pie'> = {
-    responsive: true
-  };
-
-  procesarDatosDescartes(descartes: any[]): void {
+  // -------------------
+  // Descartes
+  // -------------------
+  procesarDatosDescartes(descartes: any[]) {
     const productoPorLocal: { [producto: string]: { [local: string]: number } } = {};
     const localesSet = new Set<string>();
     const productosSet = new Set<string>();
@@ -206,13 +163,8 @@ export class StatsComponent implements OnInit {
       for (const producto of descarte.products) {
         const nombre = producto.product.name;
         const cantidad = producto.quantity;
-
         productosSet.add(nombre);
-
-        if (!productoPorLocal[nombre]) {
-          productoPorLocal[nombre] = {};
-        }
-
+        if (!productoPorLocal[nombre]) productoPorLocal[nombre] = {};
         productoPorLocal[nombre][local] = (productoPorLocal[nombre][local] || 0) + cantidad;
       }
     }
@@ -220,12 +172,12 @@ export class StatsComponent implements OnInit {
     const productos = Array.from(productosSet).slice(0, 5);
     const locales = Array.from(localesSet);
 
-    // Dataset productos más descartados
+    // Productos más descartados
     this.datosProductosMasDescartados = {
       labels: productos,
       datasets: locales.map(local => ({
         label: local,
-        data: productos.map(producto => productoPorLocal[producto]?.[local] || 0),
+        data: productos.map(p => productoPorLocal[p]?.[local] || 0),
         backgroundColor: this.getColorForLocal(local)
       }))
     };
@@ -237,25 +189,21 @@ export class StatsComponent implements OnInit {
       descartesPorLocal[local] = (descartesPorLocal[local] || 0) + 1;
     }
 
-    const localesOrdenados = Object.entries(descartesPorLocal)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
+    const localesOrdenados = Object.entries(descartesPorLocal).sort((a, b) => b[1] - a[1]).slice(0, 5);
     this.datosLocalesDescartes = {
       labels: localesOrdenados.map(([local]) => local),
       datasets: [{
         label: 'Descarte realizados',
         data: localesOrdenados.map(([, cantidad]) => cantidad),
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF'
-        ],
-        borderWidth: 1,
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+        borderWidth: 1
       }]
     };
   }
 
+  getColorForLocal(local: string): string {
+    const colores = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#8BC34A', '#E91E63', '#03A9F4'];
+    const hash = Array.from(local).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colores[hash % colores.length];
+  }
 }
