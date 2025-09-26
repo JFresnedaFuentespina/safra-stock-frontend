@@ -61,7 +61,7 @@ export class EditDiscardedProductsComponent implements OnInit {
 
   cargarProductosDisponibles() {
     this.http.get<any[]>(`${Common.url}/products`).subscribe({
-      next: (data) => this.productosDisponibles = data,
+      next: (data) => this.productosDisponibles = data.filter(p => p.active === true),
       error: (err) => {
         console.error('Error al cargar productos', err);
         if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
