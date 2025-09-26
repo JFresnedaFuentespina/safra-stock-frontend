@@ -23,7 +23,16 @@
             <canvas baseChart [data]="datosLocales" [options]="opcionesGrafico" [type]="'doughnut'" width="300"
                 height="300">
             </canvas>
-
         </div>
+        <div class="grafico-container">
+            <h4>Productos más descartados</h4>
+            <canvas baseChart [data]="datosProductosMasDescartados" [options]="opcionesGrafico" [type]="'bar'"></canvas>
+        </div>
+
+        <div class="grafico-container">
+            <h4>Locales con más descartes</h4>
+            <canvas baseChart [data]="datosLocalesDescartes" [options]="opcionesGrafico" [type]="'doughnut'"></canvas>
+        </div>
+
     </div>
 </div>

@@ -65,7 +65,7 @@ export class NewPedidoComponent implements OnInit {
     // carga productos
     this.productService.getProducts().subscribe({
       next: (data) => {
-        this.products = data;
+        this.products = data.filter(p => p.active === true);
         this.buildProductsControls();
         this.loading = false;
       },

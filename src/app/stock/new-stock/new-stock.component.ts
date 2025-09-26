@@ -81,7 +81,7 @@ export class NewStockComponent implements OnInit {
     // Cargar productos
     this.productService.getProducts().subscribe({
       next: (data: Product[]) => {
-        this.products = data;
+        this.products = data.filter(p => p.active === true);
         this.buildProductsControls();
         this.loading = false;
       },
@@ -211,7 +211,6 @@ export class NewStockComponent implements OnInit {
       this.error = 'Debes completar al menos un producto con cantidad y fecha.';
       return;
     }
-    console.log('Stock mínimo del local:', selectedLocal.stockMinPerProduct);
     // Detectar productos por debajo del stock mínimo
     const productosFaltantes = payload
       .filter(p => selectedLocal.stockMinPerProduct != null && p.stock < selectedLocal.stockMinPerProduct)

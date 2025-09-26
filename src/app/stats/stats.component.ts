@@ -41,6 +41,10 @@ export class StatsComponent implements OnInit {
     labels: [],
     datasets: []
   };
+  
+  datosProductosMasDescartados: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
+  datosLocalesDescartes: ChartConfiguration<'doughnut'>['data'] = { labels: [], datasets: [] };
+
 
   opcionesGrafico: ChartOptions = {
     responsive: true,
@@ -58,7 +62,7 @@ export class StatsComponent implements OnInit {
   ngOnInit(): void {
     this.http.get<any[]>(`${Common.url}/orders`).subscribe({
       next: (data) => {
-        this.orders = data;
+        this.orders = data.filter(o => o.active === true);
         this.procesarDatos(this.orders);
       },
       error: (err) => {
@@ -68,6 +72,19 @@ export class StatsComponent implements OnInit {
         }
       }
     });
+    this.http.get<any[]>(`${Common.url}/discarded`).subscribe({
+      next: (data) => {
+        const descartesActivos = data.filter(d => d.active === true);
+        this.procesarDatosDescartes(descartesActivos);
+      },
+      error: (err) => {
+        console.error('Error al obtener descartes:', err);
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
+      }
+    });
+
   }
 
   procesarDatos(orders: any[]): void {
@@ -176,4 +193,69 @@ export class StatsComponent implements OnInit {
   pieChartOptions: ChartOptions<'pie'> = {
     responsive: true
   };
+
+  procesarDatosDescartes(descartes: any[]): void {
+    const productoPorLocal: { [producto: string]: { [local: string]: number } } = {};
+    const localesSet = new Set<string>();
+    const productosSet = new Set<string>();
+
+    for (const descarte of descartes) {
+      const local = descarte.local.name;
+      localesSet.add(local);
+
+      for (const producto of descarte.products) {
+        const nombre = producto.product.name;
+        const cantidad = producto.quantity;
+
+        productosSet.add(nombre);
+
+        if (!productoPorLocal[nombre]) {
+          productoPorLocal[nombre] = {};
+        }
+
+        productoPorLocal[nombre][local] = (productoPorLocal[nombre][local] || 0) + cantidad;
+      }
+    }
+
+    const productos = Array.from(productosSet).slice(0, 5);
+    const locales = Array.from(localesSet);
+
+    // Dataset productos más descartados
+    this.datosProductosMasDescartados = {
+      labels: productos,
+      datasets: locales.map(local => ({
+        label: local,
+        data: productos.map(producto => productoPorLocal[producto]?.[local] || 0),
+        backgroundColor: this.getColorForLocal(local)
+      }))
+    };
+
+    // Locales con más descartes
+    const descartesPorLocal: { [local: string]: number } = {};
+    for (const descarte of descartes) {
+      const local = descarte.local.name;
+      descartesPorLocal[local] = (descartesPorLocal[local] || 0) + 1;
+    }
+
+    const localesOrdenados = Object.entries(descartesPorLocal)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    this.datosLocalesDescartes = {
+      labels: localesOrdenados.map(([local]) => local),
+      datasets: [{
+        label: 'Descarte realizados',
+        data: localesOrdenados.map(([, cantidad]) => cantidad),
+        backgroundColor: [
+          '#FF6384',
+          '#36A2EB',
+          '#FFCE56',
+          '#4BC0C0',
+          '#9966FF'
+        ],
+        borderWidth: 1,
+      }]
+    };
+  }
+
 }

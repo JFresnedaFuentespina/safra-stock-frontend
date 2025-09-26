@@ -8,13 +8,14 @@ export interface Product {
     name: string;
     description: string;
     image: any;
+    active: boolean;
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class ProductService {
-    private apiUrl = Common.url +'/products';
+    private apiUrl = Common.url + '/products';
 
     constructor(private http: HttpClient) { }
 
