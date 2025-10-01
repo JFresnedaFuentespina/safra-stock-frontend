@@ -9,6 +9,7 @@ export interface LocalDTO {
     stockMinPerProduct: number;
     workerNames: string[];
     active: boolean;
+    types: string[];
 }
 
 @Injectable({

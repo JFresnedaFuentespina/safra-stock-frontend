@@ -21,6 +21,8 @@ export class NewLocalComponent implements OnInit {
   stockMinPerProduct: number = 1; // valor por defecto
   selectedUsers: any[] = [];
   searchTerm: string = '';
+  localTypes: string[] = ['Tienda', 'Cocina'];
+  selectedTypes: string[] = [];
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -34,6 +36,15 @@ export class NewLocalComponent implements OnInit {
       }
     });
   }
+
+  toggleTypeSelection(type: string, event: any) {
+    if (event.target.checked) {
+      this.selectedTypes.push(type);
+    } else {
+      this.selectedTypes = this.selectedTypes.filter(t => t !== type);
+    }
+  }
+
 
   toggleUserSelection(user: any) {
     const index = this.selectedUsers.findIndex(u => u.id === user.id);
@@ -57,7 +68,8 @@ export class NewLocalComponent implements OnInit {
     const local = {
       name: this.name,
       stockMinPerProduct: this.stockMinPerProduct,
-      workers: this.selectedUsers
+      workers: this.selectedUsers.map(u => u.id),
+      types: this.selectedTypes,
     };
 
     const token = localStorage.getItem('authToken');

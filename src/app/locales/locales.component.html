@@ -18,6 +18,7 @@
         </select>
     </div>
 
+    <!-- Tabla escritorio -->
     <div class="table-responsive d-none d-md-block">
         <table class="table table-hover">
             <thead class="table-light">
@@ -26,6 +27,7 @@
                     <th>Nombre del local</th>
                     <th>Trabajadores</th>
                     <th>Stock mínimo/Producto</th>
+                    <th>Tipos</th>
                     <th>Opciones</th>
                 </tr>
             </thead>
@@ -34,6 +36,8 @@
                     *ngFor="let local of filteredLocales | paginate: {itemsPerPage: 5, currentPage: page}; let i = index">
                     <td>{{ local.id }}</td>
                     <td>{{ local.name }}</td>
+
+                    <!-- Trabajadores -->
                     <td>
                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
                             [attr.data-bs-target]="'#collapseWorkers' + i" aria-expanded="false"
@@ -46,7 +50,24 @@
                             </ul>
                         </div>
                     </td>
-                    <td>{{ local.stockMinPerProduct }}</td> <!-- Mostrar valor -->
+
+                    <td>{{ local.stockMinPerProduct }}</td>
+
+                    <!-- Tipos -->
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseTypes' + i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseTypes' + i">
+                            Ver tipos
+                        </button>
+                        <div class="collapse mt-2" [id]="'collapseTypes' + i">
+                            <ul class="mb-0 list-unstyled">
+                                <li *ngFor="let t of local.types">{{ t }}</li>
+                            </ul>
+                        </div>
+                    </td>
+
+                    <!-- Opciones -->
                     <td>
                         <button class="btn btn-sm btn-warning me-2" (click)="editarLocal(local.id)">
                             <i class="bi bi-pencil"></i>
@@ -75,6 +96,22 @@
                     <div class="card-body">
                         <h5 class="card-title mb-1">{{ local.name }} (ID: {{ local.id }})</h5>
                         <p class="mb-1">Stock mínimo/Producto: {{ local.stockMinPerProduct }}</p>
+
+                        <!-- Tipos -->
+                        <div class="mb-2">
+                            <button class="btn btn-sm btn-outline-secondary mb-2" type="button" data-bs-toggle="collapse"
+                                [attr.data-bs-target]="'#collapseTypesMobile' + i" aria-expanded="false"
+                                [attr.aria-controls]="'collapseTypesMobile' + i">
+                                Ver tipos
+                            </button>
+                            <div class="collapse mt-2" [id]="'collapseTypesMobile' + i">
+                                <ul class="mb-0 list-unstyled">
+                                    <li *ngFor="let t of local.types">{{ t }}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Trabajadores -->
                         <div>
                             <button class="btn btn-sm btn-outline-secondary mb-2" type="button"
                                 data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseWorkersMobile' + i"
@@ -87,6 +124,7 @@
                                 </ul>
                             </div>
                         </div>
+
                         <div class="d-flex gap-2 mt-3">
                             <button class="btn btn-sm btn-warning flex-fill" (click)="editarLocal(local.id)">
                                 <i class="bi bi-pencil"></i>
