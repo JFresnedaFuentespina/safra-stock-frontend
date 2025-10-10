@@ -20,6 +20,8 @@ import { EditLocalComponent } from './locales/edit-local/edit-local.component';
 import { DiscardedProductsComponent } from './discarded-products/discarded-products.component';
 import { NewDiscardedProductComponent } from './discarded-products/new-discarded-products/new-discarded-product.component';
 import { EditDiscardedProductsComponent } from './edit-discarded-products/edit-discarded-products.component';
+import { CocinaCentralComponent } from './cocina-central/cocina-central.component';
+import { NewStockCocinaCentralComponent } from './cocina-central/new-stock/new-stock-cocina-central.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,6 +43,8 @@ export const routes: Routes = [
   { path: 'locales/edit/:id', component: EditLocalComponent },
   { path: 'stock', component: StockComponent },
   { path: 'stock/nuevo', component: NewStockComponent },
+  { path: 'cocina-central/stock', component: CocinaCentralComponent },
+  { path: 'cocina-central/nuevo', component: NewStockCocinaCentralComponent },
   { path: 'stats', component: StatsComponent },
   { path: 'cuenta', component: AccountComponent },
   { path: '', redirectTo: '/register', pathMatch: 'full' }

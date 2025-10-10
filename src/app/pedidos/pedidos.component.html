@@ -58,15 +58,20 @@
                         <button class="btn btn-sm btn-warning me-2" (click)="onEditOrder(pedido.orderId)">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button *ngIf="pedido.active" class="btn btn-sm btn-danger"
+                        <button *ngIf="pedido.active" class="btn btn-sm btn-danger me-2"
                             (click)="onDeleteOrder(pedido.orderId)">
                             <i class="bi bi-trash"></i>
                         </button>
-                        <button *ngIf="!pedido.active" class="btn btn-sm btn-success"
+                        <button *ngIf="!pedido.active" class="btn btn-sm btn-success me-2"
                             (click)="onEnableOrder(pedido.orderId)">
                             <i class="bi bi-arrow-repeat"></i>
                         </button>
+                        <button *ngIf="isCocinaCentral" class="btn btn-sm btn-primary"
+                            (click)="onSendOrder(pedido.orderId)">
+                            <i class="bi bi-send"></i>
+                        </button>
                     </td>
+
 
                 </tr>
             </tbody>
@@ -113,7 +118,12 @@
                                 (click)="onEnableOrder(pedido.orderId)">
                                 <i class="bi bi-arrow-repeat"></i>
                             </button>
+                            <button *ngIf="isCocinaCentral" class="btn btn-sm btn-primary flex-fill"
+                                (click)="onSendOrder(pedido.orderId)">
+                                <i class="bi bi-send"></i>
+                            </button>
                         </div>
+
 
                     </div>
                 </div>

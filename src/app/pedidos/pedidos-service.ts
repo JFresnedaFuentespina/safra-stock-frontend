@@ -23,6 +23,7 @@ export interface Pedido {
 export class PedidoService {
   private apiUrl = Common.url + '/orders';
   private localesUrl = Common.url + '/locales';
+  private usersUrl = Common.url + '/users';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -33,6 +34,8 @@ export class PedidoService {
       'Content-Type': 'application/json'
     });
   }
+
+
 
   getOrders(): Observable<Pedido[]> {
     return this.http.get<Pedido[]>(this.apiUrl, { headers: this.getAuthHeaders() });
@@ -53,6 +56,17 @@ export class PedidoService {
   getLocales(): Observable<{ name: string }[]> {
     return this.http.get<{ name: string }[]>(this.localesUrl, { headers: this.getAuthHeaders() });
   }
+
+  getLocalesForUser(): Observable<{ name: string }[]> {
+    const username = localStorage.getItem('username');
+    if (!username) {
+      throw new Error('No se encontró el username en el localStorage');
+    }
+    return this.http.get<{ name: string }[]>(`${this.usersUrl}/${username}/locales`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
   disableOrder(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/disable/${id}`, {}, { headers: this.getAuthHeaders() });
   }
@@ -62,7 +76,7 @@ export class PedidoService {
   }
 
   generarPedidoAutomatico(localName: string, productos: { productName: string, quantity: number }[]): void {
-    console.log('Generando pedido automático', localName, productos); // <-- aquí
+    console.log('Generando pedido automático', localName, productos);
     const payload = { local: localName, products: productos };
     this.http.post(`${Common.url}/orders`, payload, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
@@ -76,7 +90,6 @@ export class PedidoService {
       }
     });
   }
-
 
   sendEmailPedido(localName: string, productos: { productName: string, quantity: number }[]): void {
     const payload = {
@@ -97,6 +110,5 @@ export class PedidoService {
       }
     });
   }
-
 
 }

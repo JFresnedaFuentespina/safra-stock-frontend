@@ -52,6 +52,10 @@ export class NavbarComponent implements OnInit {
   goToStock() {
     this.router.navigate(["/stock"]);
   }
+  
+  goToCocinaCentral() {
+    this.router.navigate(["/cocina-central/stock"]);
+  }
 
   goToStats() {
     this.router.navigate(["/stats"]);

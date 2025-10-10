@@ -4,9 +4,8 @@ import { NavbarComponent } from "../navbar/navbar.component";
 import { Pedido, PedidoService } from './pedidos-service';
 import { Router } from '@angular/router';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-
 
 @Component({
   selector: 'app-pedidos',
@@ -15,36 +14,49 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './pedidos.component.html',
   styleUrl: './pedidos.component.css'
 })
-
-
 export class PedidosComponent {
   pedidos: Pedido[] = [];
   loading = true;
   error = '';
   page: number = 1;
 
+  /** ✅ Nuevo: indica si el usuario pertenece a “Cocina Central” */
+  isCocinaCentral = false;
+
   constructor(private pedidoService: PedidoService, private router: Router, private http: HttpClient) { }
 
   ngOnInit(): void {
-    this.pedidoService.getOrders().subscribe({
-      next: (data) => {
-        this.pedidos = data;
-        console.log(this.pedidos);
-        this.loading = false;
+    this.pedidoService.getLocalesForUser().subscribe({
+      next: (locales) => {
+        console.log('Locales del usuario:', locales);
+
+        // ✅ Comprobar si alguno es “Cocina Central”
+        this.isCocinaCentral = locales.some(l => l.name === 'Cocina Central');
+
+        this.pedidoService.getOrders().subscribe({
+          next: (data) => {
+            this.pedidos = data;
+            this.loading = false;
+          },
+          error: (err) => {
+            this.error = 'No se pudieron cargar los pedidos';
+            console.error(err);
+            this.loading = false;
+            if (err.status === 401 || err.status === 403) {
+              this.router.navigate(['/login']);
+            }
+          },
+        });
       },
       error: (err) => {
-        this.error = 'No se pudieron cargar los pedidos';
-        console.error(err);
+        console.error('Error al obtener locales del usuario', err);
+        this.error = 'No se pudieron obtener los locales del usuario';
         this.loading = false;
-        if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
-        }
-      },
+      }
     });
   }
 
   showDisabled = false;
-
   filterStatus: 'active' | 'inactive' | 'all' = 'active';
 
   get filteredPedidos() {
@@ -53,10 +65,9 @@ export class PedidosComponent {
     } else if (this.filterStatus === 'inactive') {
       return this.pedidos.filter(p => !p.active);
     } else {
-      return this.pedidos; // todos
+      return this.pedidos;
     }
   }
-
 
   onNewOrder(): void {
     this.router.navigate(['/pedidos/nuevo']);
@@ -70,7 +81,6 @@ export class PedidosComponent {
     if (confirm('¿Seguro que quieres desactivar este pedido?')) {
       this.pedidoService.disableOrder(id).subscribe({
         next: () => {
-          // Actualizar lista de pedidos quitando el desactivado
           this.pedidos = this.pedidos.map(p =>
             p.orderId === id ? { ...p, active: false } : p
           );
@@ -86,7 +96,6 @@ export class PedidosComponent {
   onEnableOrder(id: number): void {
     this.pedidoService.enableOrder(id).subscribe({
       next: () => {
-        // Actualizamos la lista recargando los pedidos
         const pedido = this.pedidos.find(p => p.orderId === id);
         if (pedido) pedido.active = true;
       },
@@ -96,6 +105,12 @@ export class PedidosComponent {
     });
   }
 
+  /** ✅ Nuevo: acción del botón Enviar */
+  onSendOrder(id: number): void {
+    console.log('📤 Enviar pedido', id);
+    // Aquí podrías hacer un this.pedidoService.sendOrder(id).subscribe(...)
+    alert(`Pedido ${id} enviado correctamente (simulado)`);
+  }
 
   formatFecha(date: string | null | undefined): string {
     if (!date) return 'Fecha no disponible';
@@ -106,5 +121,4 @@ export class PedidosComponent {
       year: 'numeric'
     });
   }
-
 }

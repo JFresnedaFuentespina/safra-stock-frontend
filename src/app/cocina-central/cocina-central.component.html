@@ -1,0 +1,103 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4">
+    <h2 class="my-4 d-flex justify-content-between align-items-center gap-2">
+        Stock Cocina Central
+        <button class="btn btn-primary" (click)="onNewStock()">
+            <i class="bi bi-plus-circle me-1"></i> Añadir Stock
+        </button>
+    </h2>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <!-- FILTROS POR FECHAS -->
+    <div class="row mb-3 g-2 align-items-end">
+        <div class="col-md-3">
+            <label>Fecha inicio</label>
+            <input type="date" class="form-control" [(ngModel)]="filterStartDate" (change)="applyFilters()">
+        </div>
+
+        <div class="col-md-3">
+            <label>Fecha fin</label>
+            <input type="date" class="form-control" [(ngModel)]="filterEndDate" (change)="applyFilters()">
+        </div>
+
+        <div class="col-md-3 d-flex align-items-center mt-2 mt-md-0">
+            <button class="btn btn-secondary w-100" (click)="filterStartDate=''; filterEndDate=''; applyFilters()">
+                Limpiar filtros
+            </button>
+        </div>
+    </div>
+
+    <!-- 🖥️ VERSIÓN ESCRITORIO -->
+    <div class="accordion d-none d-md-block" id="stockAccordion" *ngIf="filteredStockList?.length">
+        <div class="accordion-item" *ngFor="let group of filteredStockList; let i = index">
+            <h2 class="accordion-header" [id]="'heading'+i">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    [attr.data-bs-target]="'#collapse'+i" aria-expanded="false" [attr.aria-controls]="'collapse'+i">
+                    {{ group.localName }} — {{ formatFecha(group.date) }}
+                </button>
+            </h2>
+            <div [id]="'collapse'+i" class="accordion-collapse collapse" [attr.aria-labelledby]="'heading'+i"
+                data-bs-parent="#stockAccordion">
+                <div class="accordion-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Fecha del producto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let p of group.products">
+                                    <td>{{ p.productName }}</td>
+                                    <td>{{ p.stock }}</td>
+                                    <td>{{ formatFecha(p.productDate) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📱 VERSIÓN MÓVIL -->
+    <div class="d-md-none" *ngIf="filteredStockList?.length">
+        <div class="row g-3">
+            <div class="col-12" *ngFor="let group of filteredStockList; let i = index">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ group.localName }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {{ formatFecha(group.date) }}
+                        </h6>
+
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" type="button"
+                            data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseMobile'+i" aria-expanded="false"
+                            [attr.aria-controls]="'collapseMobile'+i">
+                            Ver productos
+                        </button>
+
+                        <div class="collapse" [id]="'collapseMobile'+i">
+                            <ul class="list-group list-group-flush">
+                                <li *ngFor="let p of group.products" class="list-group-item d-flex flex-column">
+                                    <div><strong>{{ p.productName }}</strong></div>
+                                    <div>Cantidad: {{ p.stock }}</div>
+                                    <div>Fecha producto: {{ formatFecha(p.productDate) }}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENSAJE VACÍO -->
+    <div *ngIf="!filteredStockList?.length && !error" class="alert alert-secondary mt-3">
+        No hay stock disponible.
+    </div>
+</div>
