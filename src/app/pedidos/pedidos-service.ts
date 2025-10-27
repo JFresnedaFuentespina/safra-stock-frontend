@@ -110,5 +110,12 @@ export class PedidoService {
       }
     });
   }
+  
+  getLastStockCocinaCentral(): Observable<any> {
+    return this.http.get(`${Common.url}/cocina-central/last-stock`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
 
 }

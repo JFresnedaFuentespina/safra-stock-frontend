@@ -20,8 +20,12 @@ export class PedidosComponent {
   error = '';
   page: number = 1;
 
-  /** ✅ Nuevo: indica si el usuario pertenece a “Cocina Central” */
   isCocinaCentral = false;
+  selectedPedido: Pedido | null = null;
+  showModal = false;
+  stockCocinaCentral: any = null;
+  selectedStockItems: any[] = [];
+
 
   constructor(private pedidoService: PedidoService, private router: Router, private http: HttpClient) { }
 
@@ -35,7 +39,7 @@ export class PedidosComponent {
 
         this.pedidoService.getOrders().subscribe({
           next: (data) => {
-            this.pedidos = data;
+            this.pedidos = data.sort((a, b) => b.orderId - a.orderId);
             this.loading = false;
           },
           error: (err) => {
@@ -52,6 +56,7 @@ export class PedidosComponent {
         console.error('Error al obtener locales del usuario', err);
         this.error = 'No se pudieron obtener los locales del usuario';
         this.loading = false;
+        if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
       }
     });
   }
@@ -88,6 +93,7 @@ export class PedidosComponent {
         error: (err) => {
           console.error('Error al desactivar pedido', err);
           this.error = 'No se pudo desactivar el pedido';
+          if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
         }
       });
     }
@@ -101,16 +107,62 @@ export class PedidosComponent {
       },
       error: (err) => {
         console.error('Error al reactivar pedido', err);
+        if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
       }
     });
   }
 
-  /** ✅ Nuevo: acción del botón Enviar */
   onSendOrder(id: number): void {
-    console.log('📤 Enviar pedido', id);
-    // Aquí podrías hacer un this.pedidoService.sendOrder(id).subscribe(...)
-    alert(`Pedido ${id} enviado correctamente (simulado)`);
+    const pedido = this.pedidos.find(p => p.orderId === id);
+    if (pedido) {
+      this.selectedPedido = pedido;
+      this.showModal = true;
+
+      // 🔹 Cargar el stock de Cocina Central desde el backend
+      this.pedidoService.getLastStockCocinaCentral().subscribe({
+        next: (stockData) => {
+          console.log('Stock Cocina Central:', stockData);
+          this.stockCocinaCentral = stockData;
+        },
+        error: (err) => {
+          console.error('Error al obtener stock de Cocina Central', err);
+          this.stockCocinaCentral = null;
+          if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
+        }
+      });
+    }
   }
+
+  // Cierra el modal
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedPedido = null;
+    this.stockCocinaCentral = null;
+  }
+
+
+  // Confirmar envío (aquí harías la llamada real al backend si quieres)
+  confirmSendOrder(): void {
+    if (this.selectedPedido) {
+      alert(`📦 Pedido #${this.selectedPedido.orderId} enviado correctamente`);
+      this.showModal = false;
+    }
+  }
+
+  toggleStockSelection(stockItem: any) {
+    const index = this.selectedStockItems.findIndex(p => p.productName === stockItem.productName);
+    if (index === -1) {
+      this.selectedStockItems.push(stockItem);
+    } else {
+      this.selectedStockItems.splice(index, 1);
+    }
+  }
+
+  isStockSelected(stockItem: any): boolean {
+    return this.selectedStockItems.some(p => p.productName === stockItem.productName);
+  }
+
+
 
   formatFecha(date: string | null | undefined): string {
     if (!date) return 'Fecha no disponible';

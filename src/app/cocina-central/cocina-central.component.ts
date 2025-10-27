@@ -60,8 +60,8 @@ export class CocinaCentralComponent implements OnInit {
     const combined: { [key: string]: any } = {};
 
     for (const product of products) {
-      // Creamos una clave única por nombre y fecha
-      const key = `${product.productName.trim().toLowerCase()}_${product.date}`;
+      // ✅ Clave correcta: nombre + fecha del producto
+      const key = `${product.productName.trim().toLowerCase()}_${product.productDate}`;
 
       if (!combined[key]) {
         combined[key] = { ...product };
