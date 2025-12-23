@@ -110,7 +110,41 @@ export class PedidoService {
       }
     });
   }
-  
+
+  updateCocinaCentralStock(products: { productName: string; quantity: number; date: string }[]): Observable<any> {
+    const payload = products.map(p => ({
+      productName: p.productName,
+      quantity: p.quantity,
+      date: p.date,
+      localName: "Cocina Central"
+    }));
+
+    return this.http.put(
+      `${Common.url}/cocina-central/stock/update-last`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  generateCocinaCentralStockFromLast(
+    products: { productName: string; quantity: number; date: string }[]
+  ): Observable<any> {
+
+    const payload = products.map(p => ({
+      productName: p.productName,
+      quantity: p.quantity,
+      date: p.date,
+      localName: "Cocina Central"
+    }));
+
+    return this.http.post(
+      `${Common.url}/cocina-central/stock/generate-with-last`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+
   getLastStockCocinaCentral(): Observable<any> {
     return this.http.get(`${Common.url}/cocina-central/last-stock`, {
       headers: this.getAuthHeaders()

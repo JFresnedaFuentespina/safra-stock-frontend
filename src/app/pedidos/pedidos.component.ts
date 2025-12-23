@@ -141,11 +141,69 @@ export class PedidosComponent {
   }
 
 
-  // Confirmar envío (aquí harías la llamada real al backend si quieres)
   confirmSendOrder(): void {
-    if (this.selectedPedido) {
-      alert(`📦 Pedido #${this.selectedPedido.orderId} enviado correctamente`);
-      this.showModal = false;
+    if (!this.selectedPedido) return;
+
+    if (this.selectedStockItems.length === 0) {
+      alert('No hay productos seleccionados.');
+      return;
+    }
+
+    this.updateTodaysCocinaCentralStock(this.selectedStockItems);
+  }
+
+
+  updateTodaysCocinaCentralStock(selectedStocks: any[]): void {
+    if (!this.selectedPedido) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const stockDate = new Date(this.stockCocinaCentral.date);
+    stockDate.setHours(0, 0, 0, 0);
+
+    // 🔹 Construir payload REAL basado en el pedido
+    const payload = this.selectedPedido.products.map(p => {
+      const selected = selectedStocks.find(s => s.productName === p.productName);
+      if (!selected) return null;
+
+      return {
+        productName: p.productName,
+        quantity: p.quantity,
+        date: selected.productDate.slice(0, 10)
+      };
+    }).filter(p => p !== null);
+
+    console.log("Payload final enviado al backend:", payload);
+
+    // Decidir qué endpoint llamar
+    if (stockDate.getTime() === today.getTime()) {
+      // Existe stock de hoy → actualizar
+      this.pedidoService.updateCocinaCentralStock(payload).subscribe({
+        next: () => {
+          alert('Stock de Cocina Central actualizado correctamente');
+          this.selectedStockItems = [];
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error al actualizar el stock de Cocina Central');
+        }
+      });
+
+    } else {
+      // No existe stock de hoy → generar nuevo desde el último
+      this.pedidoService.generateCocinaCentralStockFromLast(payload).subscribe({
+        next: () => {
+          alert('Nuevo stock de Cocina Central generado correctamente');
+          this.selectedStockItems = [];
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error al generar el nuevo stock de Cocina Central');
+        }
+      });
     }
   }
 
