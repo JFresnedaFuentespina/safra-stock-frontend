@@ -152,9 +152,14 @@ export class PedidosComponent {
     this.updateTodaysCocinaCentralStock(this.selectedStockItems);
   }
 
-
   updateTodaysCocinaCentralStock(selectedStocks: any[]): void {
-    if (!this.selectedPedido) return;
+    const pedido = this.selectedPedido;
+    if (!pedido) return;
+
+    if (!this.stockCocinaCentral) {
+      alert('No hay stock de Cocina Central cargado');
+      return;
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -162,50 +167,39 @@ export class PedidosComponent {
     const stockDate = new Date(this.stockCocinaCentral.date);
     stockDate.setHours(0, 0, 0, 0);
 
-    // 🔹 Construir payload REAL basado en el pedido
-    const payload = this.selectedPedido.products.map(p => {
+    const payload = pedido.products.map(p => {
       const selected = selectedStocks.find(s => s.productName === p.productName);
       if (!selected) return null;
 
       return {
         productName: p.productName,
         quantity: p.quantity,
-        date: selected.productDate.slice(0, 10)
+        date: selected.productDate ? selected.productDate.slice(0, 10) : null,
+        orderId: pedido.orderId
       };
-    }).filter(p => p !== null);
+    }).filter(p => p !== null) as any[];
 
     console.log("Payload final enviado al backend:", payload);
 
-    // Decidir qué endpoint llamar
-    if (stockDate.getTime() === today.getTime()) {
-      // Existe stock de hoy → actualizar
-      this.pedidoService.updateCocinaCentralStock(payload).subscribe({
-        next: () => {
-          alert('Stock de Cocina Central actualizado correctamente');
-          this.selectedStockItems = [];
-          this.closeModal();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error al actualizar el stock de Cocina Central');
-        }
-      });
+    const request$ = stockDate.getTime() === today.getTime()
+      ? this.pedidoService.updateCocinaCentralStock(payload)
+      : this.pedidoService.generateCocinaCentralStockFromLast(payload);
 
-    } else {
-      // No existe stock de hoy → generar nuevo desde el último
-      this.pedidoService.generateCocinaCentralStockFromLast(payload).subscribe({
-        next: () => {
-          alert('Nuevo stock de Cocina Central generado correctamente');
-          this.selectedStockItems = [];
-          this.closeModal();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error al generar el nuevo stock de Cocina Central');
-        }
-      });
-    }
+    request$.subscribe({
+      next: () => {
+        alert(stockDate.getTime() === today.getTime()
+          ? 'Stock de Cocina Central actualizado correctamente'
+          : 'Nuevo stock de Cocina Central generado correctamente');
+        this.selectedStockItems = [];
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error al actualizar/generar el stock de Cocina Central');
+      }
+    });
   }
+
 
   toggleStockSelection(stockItem: any) {
     const index = this.selectedStockItems.findIndex(p => p.productName === stockItem.productName);

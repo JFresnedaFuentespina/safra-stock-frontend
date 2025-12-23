@@ -17,6 +17,14 @@ export interface Pedido {
   active: boolean | number;
 }
 
+export interface ProductQuantity {
+  productName: string;
+  ordered: number;
+  sent: number;
+  pending: number;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
