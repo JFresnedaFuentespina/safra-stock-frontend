@@ -19,9 +19,16 @@ export interface Pedido {
 
 export interface ProductQuantity {
   productName: string;
-  ordered: number;
-  sent: number;
-  pending: number;
+  quantity: number;  // lo que se pidió
+  sent?: number;     // lo que ya se ha enviado
+  pending?: number;  // lo que queda por enviar
+}
+
+export interface ShipmentProduct {
+  productName: string;
+  quantity: number;   // lo que se ha enviado
+  date?: string;      // fecha del envío
+  orderId?: number;
 }
 
 
@@ -119,11 +126,12 @@ export class PedidoService {
     });
   }
 
-  updateCocinaCentralStock(products: { productName: string; quantity: number; date: string }[]): Observable<any> {
+  updateCocinaCentralStock(products: { productName: string; quantity: number; date: string; orderId: number }[]): Observable<any> {
     const payload = products.map(p => ({
       productName: p.productName,
       quantity: p.quantity,
       date: p.date,
+      orderId: p.orderId,
       localName: "Cocina Central"
     }));
 
@@ -135,13 +143,13 @@ export class PedidoService {
   }
 
   generateCocinaCentralStockFromLast(
-    products: { productName: string; quantity: number; date: string }[]
+    products: { productName: string; quantity: number; date: string; orderId: number }[]
   ): Observable<any> {
-
     const payload = products.map(p => ({
       productName: p.productName,
       quantity: p.quantity,
       date: p.date,
+      orderId: p.orderId,
       localName: "Cocina Central"
     }));
 
@@ -159,5 +167,10 @@ export class PedidoService {
     });
   }
 
-
+  getOrderShipments(orderId: number): Observable<ShipmentProduct[]> {
+    return this.http.get<ShipmentProduct[]>(
+      `${this.apiUrl}/${orderId}/shipments`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 }

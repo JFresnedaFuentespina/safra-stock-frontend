@@ -26,6 +26,9 @@ export class PedidosComponent {
   stockCocinaCentral: any = null;
   selectedStockItems: any[] = [];
 
+  sentProducts: { productName: string; quantity: number }[] = [];
+  pendingProducts: { productName: string; quantity: number }[] = [];
+
 
   constructor(private pedidoService: PedidoService, private router: Router, private http: HttpClient) { }
 
@@ -114,24 +117,54 @@ export class PedidosComponent {
 
   onSendOrder(id: number): void {
     const pedido = this.pedidos.find(p => p.orderId === id);
-    if (pedido) {
-      this.selectedPedido = pedido;
-      this.showModal = true;
+    if (!pedido) return;
 
-      // 🔹 Cargar el stock de Cocina Central desde el backend
-      this.pedidoService.getLastStockCocinaCentral().subscribe({
-        next: (stockData) => {
-          console.log('Stock Cocina Central:', stockData);
-          this.stockCocinaCentral = stockData;
-        },
-        error: (err) => {
-          console.error('Error al obtener stock de Cocina Central', err);
-          this.stockCocinaCentral = null;
-          if (err.status === 401 || err.status === 403) this.router.navigate(['/login']);
-        }
-      });
-    }
+    this.selectedPedido = { ...pedido }; // clonamos para no modificar directamente
+
+    // Traer stock y envíos en paralelo
+    this.pedidoService.getLastStockCocinaCentral().subscribe({
+      next: (stockData) => this.stockCocinaCentral = stockData,
+      error: (err) => { console.error(err); this.stockCocinaCentral = null; }
+    });
+
+    this.pedidoService.getOrderShipments(pedido.orderId).subscribe({
+      next: (shipments) => {
+        this.sentProducts = shipments;
+
+        // Añadir sent y pending a selectedPedido.products
+        this.selectedPedido!.products = this.selectedPedido!.products.map(p => {
+          // Convertimos a number para evitar strings
+          const orderedQty = Number(p.quantity);
+
+          const sentQty = this.sentProducts
+            .filter(s => s.productName.trim().toLowerCase() === p.productName.trim().toLowerCase())
+            .reduce((sum, s) => sum + Number(s.quantity), 0);
+
+          console.log('Producto:', p.productName, 'Pedido:', orderedQty, 'Enviados:', sentQty);
+
+          return {
+            ...p,
+            sent: sentQty,
+            pending: Math.max(0, orderedQty - sentQty) // pendiente nunca negativo
+          };
+        });
+
+        // ✅ Abrir modal solo después de tener los envíos
+        this.showModal = true;
+      },
+      error: (err) => {
+        console.error(err);
+        this.sentProducts = [];
+        this.selectedPedido!.products = this.selectedPedido!.products.map(p => ({
+          ...p,
+          sent: 0,
+          pending: p.quantity
+        }));
+        this.showModal = true; // abrir modal aunque haya error
+      }
+    });
   }
+
 
   // Cierra el modal
   closeModal(): void {
@@ -178,8 +211,6 @@ export class PedidosComponent {
         orderId: pedido.orderId
       };
     }).filter(p => p !== null) as any[];
-
-    console.log("Payload final enviado al backend:", payload);
 
     const request$ = stockDate.getTime() === today.getTime()
       ? this.pedidoService.updateCocinaCentralStock(payload)
