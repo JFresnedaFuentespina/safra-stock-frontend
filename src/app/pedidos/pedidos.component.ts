@@ -7,6 +7,14 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
+
+interface StockProduct {
+  productName: string;
+  stock: number;
+  productDate: Date;
+}
+
+
 @Component({
   selector: 'app-pedidos',
   standalone: true,
@@ -119,51 +127,67 @@ export class PedidosComponent {
     const pedido = this.pedidos.find(p => p.orderId === id);
     if (!pedido) return;
 
-    this.selectedPedido = { ...pedido }; // clonamos para no modificar directamente
+    // Inicializar selectedPedido con originalQuantity
+    this.selectedPedido = {
+      ...pedido,
+      products: pedido.products.map(p => ({
+        ...p,
+        originalQuantity: p.quantity,
+        quantity: 0 // cantidad a enviar ahora
+      }))
+    };
 
-    // Traer stock y envíos en paralelo
+    // Traemos stock y envíos en paralelo
+    this.stockCocinaCentral = null; // para que aparezca spinner mientras carga
+
+    // GET stock de Cocina Central
     this.pedidoService.getLastStockCocinaCentral().subscribe({
-      next: (stockData) => this.stockCocinaCentral = stockData,
-      error: (err) => { console.error(err); this.stockCocinaCentral = null; }
-    });
+      next: (stockData) => {
+        this.stockCocinaCentral = stockData;
 
-    this.pedidoService.getOrderShipments(pedido.orderId).subscribe({
-      next: (shipments) => {
-        this.sentProducts = shipments;
+        // Una vez que tenemos el stock, traemos envíos
+        this.pedidoService.getOrderShipments(pedido.orderId).subscribe({
+          next: (shipments) => {
+            this.sentProducts = shipments;
 
-        // Añadir sent y pending a selectedPedido.products
-        this.selectedPedido!.products = this.selectedPedido!.products.map(p => {
-          // Convertimos a number para evitar strings
-          const orderedQty = Number(p.quantity);
+            // Añadir sent y pending a selectedPedido.products
+            this.selectedPedido!.products = this.selectedPedido!.products.map(p => {
+              const sentQty = this.sentProducts
+                .filter(s => s.productName.trim().toLowerCase() === p.productName.trim().toLowerCase())
+                .reduce((sum, s) => sum + Number(s.quantity), 0);
 
-          const sentQty = this.sentProducts
-            .filter(s => s.productName.trim().toLowerCase() === p.productName.trim().toLowerCase())
-            .reduce((sum, s) => sum + Number(s.quantity), 0);
+              return {
+                ...p,
+                sent: sentQty,
+                pending: Math.max(0, (p.originalQuantity ?? 0) - sentQty),
+                quantity: 0
+              };
+            });
 
-          console.log('Producto:', p.productName, 'Pedido:', orderedQty, 'Enviados:', sentQty);
-
-          return {
-            ...p,
-            sent: sentQty,
-            pending: Math.max(0, orderedQty - sentQty) // pendiente nunca negativo
-          };
+            // Solo ahora abrimos el modal
+            this.showModal = true;
+          },
+          error: (err) => {
+            console.error('Error al cargar envíos:', err);
+            this.selectedPedido!.products = this.selectedPedido!.products.map(p => ({
+              ...p,
+              sent: 0,
+              pending: p.originalQuantity ?? 0,
+              quantity: 0
+            }));
+            this.showModal = true;
+          }
         });
 
-        // ✅ Abrir modal solo después de tener los envíos
-        this.showModal = true;
       },
       error: (err) => {
-        console.error(err);
-        this.sentProducts = [];
-        this.selectedPedido!.products = this.selectedPedido!.products.map(p => ({
-          ...p,
-          sent: 0,
-          pending: p.quantity
-        }));
-        this.showModal = true; // abrir modal aunque haya error
+        console.error('Error al cargar stock de Cocina Central:', err);
+        this.stockCocinaCentral = null;
+        this.showModal = true; // abrimos el modal aunque no haya stock
       }
     });
   }
+
 
 
   // Cierra el modal
@@ -177,17 +201,40 @@ export class PedidosComponent {
   confirmSendOrder(): void {
     if (!this.selectedPedido) return;
 
-    if (this.selectedStockItems.length === 0) {
-      alert('No hay productos seleccionados.');
+    const payload = this.selectedPedido.products
+      .filter(p => Number(p.quantity) > 0)
+      .map(p => ({
+        productName: p.productName,
+        quantity: Number(p.quantity),
+        orderId: this.selectedPedido!.orderId
+      }));
+
+    if (payload.length === 0) {
+      alert('No has indicado ninguna cantidad a enviar');
       return;
     }
 
-    this.updateTodaysCocinaCentralStock(this.selectedStockItems);
+    this.updateTodaysCocinaCentralStock(payload);
   }
 
-  updateTodaysCocinaCentralStock(selectedStocks: any[]): void {
-    const pedido = this.selectedPedido;
-    if (!pedido) return;
+  getStockForProduct(productName: string): number {
+    if (!this.stockCocinaCentral) return 0;
+
+    const stockItem = this.stockCocinaCentral.products.find((s: StockProduct) =>
+      s.productName.trim().toLowerCase() === productName.trim().toLowerCase()
+    );
+
+    return stockItem?.stock ?? 0;
+  }
+
+
+  updateTodaysCocinaCentralStock(payload: {
+    productName: string;
+    quantity: number;
+    orderId: number;
+  }[]): void {
+
+    if (!this.selectedPedido) return;
 
     if (!this.stockCocinaCentral) {
       alert('No hay stock de Cocina Central cargado');
@@ -200,28 +247,26 @@ export class PedidosComponent {
     const stockDate = new Date(this.stockCocinaCentral.date);
     stockDate.setHours(0, 0, 0, 0);
 
-    const payload = pedido.products.map(p => {
-      const selected = selectedStocks.find(s => s.productName === p.productName);
-      if (!selected) return null;
+    // Añadimos la fecha del stock a cada producto
+    const finalPayload = payload.map(p => ({
+      productName: p.productName,
+      quantity: p.quantity,
+      orderId: p.orderId,
+      date: this.stockCocinaCentral.date
+    }));
 
-      return {
-        productName: p.productName,
-        quantity: p.quantity,
-        date: selected.productDate ? selected.productDate.slice(0, 10) : null,
-        orderId: pedido.orderId
-      };
-    }).filter(p => p !== null) as any[];
-
-    const request$ = stockDate.getTime() === today.getTime()
-      ? this.pedidoService.updateCocinaCentralStock(payload)
-      : this.pedidoService.generateCocinaCentralStockFromLast(payload);
+    const request$ =
+      stockDate.getTime() === today.getTime()
+        ? this.pedidoService.updateCocinaCentralStock(finalPayload)
+        : this.pedidoService.generateCocinaCentralStockFromLast(finalPayload);
 
     request$.subscribe({
       next: () => {
-        alert(stockDate.getTime() === today.getTime()
-          ? 'Stock de Cocina Central actualizado correctamente'
-          : 'Nuevo stock de Cocina Central generado correctamente');
-        this.selectedStockItems = [];
+        alert(
+          stockDate.getTime() === today.getTime()
+            ? 'Stock de Cocina Central actualizado correctamente'
+            : 'Nuevo stock de Cocina Central generado correctamente'
+        );
         this.closeModal();
       },
       error: (err) => {
@@ -230,21 +275,6 @@ export class PedidosComponent {
       }
     });
   }
-
-
-  toggleStockSelection(stockItem: any) {
-    const index = this.selectedStockItems.findIndex(p => p.productName === stockItem.productName);
-    if (index === -1) {
-      this.selectedStockItems.push(stockItem);
-    } else {
-      this.selectedStockItems.splice(index, 1);
-    }
-  }
-
-  isStockSelected(stockItem: any): boolean {
-    return this.selectedStockItems.some(p => p.productName === stockItem.productName);
-  }
-
 
 
   formatFecha(date: string | null | undefined): string {

@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 export interface ProductQuantity {
   productName: string;
   quantity: number;
+  originalQuantity: number;
 }
 
 export interface Pedido {
@@ -30,7 +31,6 @@ export interface ShipmentProduct {
   date?: string;      // fecha del envío
   orderId?: number;
 }
-
 
 @Injectable({
   providedIn: 'root'
