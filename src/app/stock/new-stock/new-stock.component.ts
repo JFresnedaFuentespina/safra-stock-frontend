@@ -84,6 +84,7 @@ export class NewStockComponent implements OnInit {
         this.products = data.filter(p => p.active === true);
         this.buildProductsControls();
         this.loading = false;
+        this.router.navigate(['/stock']);
       },
       error: (err) => {
         console.error(err);
