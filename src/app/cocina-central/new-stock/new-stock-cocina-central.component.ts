@@ -102,11 +102,6 @@ export class NewStockCocinaCentralComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.invalid) {
-      console.log("❌ ERROR EN EL FORMULARIO");
-      console.log("Valor actual del formulario:", this.form.value);
-      console.log("Estado del formulario:", this.form.status);
-      console.log("Errores del formulario:", this.form.errors);
-
       // Recorremos productos y entradas para ver qué falla
       const productsArray = this.form.get('products');
       if (productsArray instanceof FormArray) {
@@ -149,6 +144,7 @@ export class NewStockCocinaCentralComponent implements OnInit {
         alert('Stock guardado correctamente');
         this.form.reset();
         this.populateProductsArray();
+        this.router.navigate(['/cocina-central/stock'])
       },
       error: (err) => {
         console.error('Error al crear el stock', err);
