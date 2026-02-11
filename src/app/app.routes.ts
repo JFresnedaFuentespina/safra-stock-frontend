@@ -43,6 +43,7 @@ export const routes: Routes = [
   { path: 'locales/edit/:id', component: EditLocalComponent },
   { path: 'stock', component: StockComponent },
   { path: 'stock/nuevo', component: NewStockComponent },
+  { path: 'stock/editar/:localName/:date', component: NewStockComponent },
   { path: 'cocina-central/stock', component: CocinaCentralComponent },
   { path: 'cocina-central/nuevo', component: NewStockCocinaCentralComponent },
   { path: 'stats', component: StatsComponent },

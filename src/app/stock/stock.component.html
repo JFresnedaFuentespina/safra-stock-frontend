@@ -46,6 +46,7 @@
                     <th>Local</th>
                     <th>Pedido</th>
                     <th>Fecha de pedido</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,6 +76,12 @@
 
                     <!-- Fecha de pedido general -->
                     <td>{{ stock.products.length ? formatFecha(stock.products[0].orderDate) : '—' }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" (click)="editarStock(stock.localName, stock.stockDate)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                    </td>
+
                 </tr>
             </tbody>
         </table>
@@ -96,6 +103,11 @@
                             aria-expanded="false" [attr.aria-controls]="'collapseProductsMobile' + i">
                             Ver productos
                         </button>
+                        <button class="btn btn-sm btn-warning w-100 mb-2"
+                            (click)="editarStock(stock.localName, stock.stockDate)">
+                            <i class="bi bi-pencil"></i> Editar stock
+                        </button>
+
                         <div class="collapse mt-2" [id]="'collapseProductsMobile' + i">
                             <ul class="list-group">
                                 <li *ngFor="let p of stock.products" class="list-group-item d-flex flex-column gap-1">

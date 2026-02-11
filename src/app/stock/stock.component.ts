@@ -18,6 +18,7 @@ interface LocalStockFlat {
 
 interface GroupedStock {
   localName: string;
+  stockDate: string;
   products: {
     productName: string;
     stock: number;
@@ -116,18 +117,19 @@ export class StockComponent implements OnInit {
   }
 
   groupByLocalAndDate(data: LocalStockFlat[]): GroupedStock[] {
-    const grouped: { [key: string]: GroupedStock & { stockDate: string } } = {};
+    const grouped: { [key: string]: GroupedStock } = {};
 
     data.forEach(entry => {
-      // clave única por local + fecha de pedido
       const key = entry.localName + '|' + entry.stockDate;
+
       if (!grouped[key]) {
         grouped[key] = {
           localName: entry.localName,
-          products: [],
-          stockDate: entry.stockDate // guardamos la fecha para poder ordenar
+          stockDate: entry.stockDate,
+          products: []
         };
       }
+
       grouped[key].products.push({
         productName: entry.productName,
         stock: entry.stock,
@@ -136,17 +138,16 @@ export class StockComponent implements OnInit {
       });
     });
 
-    // Ordenar productos alfabéticamente dentro de cada grupo
     Object.values(grouped).forEach(group => {
-      group.products.sort((a, b) => a.productName.localeCompare(b.productName));
+      group.products.sort((a, b) =>
+        a.productName.localeCompare(b.productName)
+      );
     });
 
-    // Convertir a array y ordenar grupos por stockDate descendente (más recientes primero)
-    return Object.values(grouped).sort((a, b) => {
-      return new Date(b.stockDate).getTime() - new Date(a.stockDate).getTime();
-    });
+    return Object.values(grouped).sort((a, b) =>
+      new Date(b.stockDate).getTime() - new Date(a.stockDate).getTime()
+    );
   }
-
 
 
   formatFecha(fecha: string | null | undefined): string {
@@ -177,7 +178,8 @@ export class StockComponent implements OnInit {
     }
   }
 
-  editarStock(local: string): void {
-    this.router.navigate(['/stock/editar', local]);
+  editarStock(local: string, stockDate: string): void {
+    this.router.navigate(['/stock/editar', local, stockDate]);
   }
+
 }
