@@ -22,6 +22,7 @@ import { NewDiscardedProductComponent } from './discarded-products/new-discarded
 import { EditDiscardedProductsComponent } from './edit-discarded-products/edit-discarded-products.component';
 import { CocinaCentralComponent } from './cocina-central/cocina-central.component';
 import { NewStockCocinaCentralComponent } from './cocina-central/new-stock/new-stock-cocina-central.component';
+import { EditStockComponent } from './stock/edit-stock/edit-stock.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -43,7 +44,7 @@ export const routes: Routes = [
   { path: 'locales/edit/:id', component: EditLocalComponent },
   { path: 'stock', component: StockComponent },
   { path: 'stock/nuevo', component: NewStockComponent },
-  { path: 'stock/editar/:localName/:date', component: NewStockComponent },
+  { path: 'stock/editar/:localName/:date', component: EditStockComponent },
   { path: 'cocina-central/stock', component: CocinaCentralComponent },
   { path: 'cocina-central/nuevo', component: NewStockCocinaCentralComponent },
   { path: 'stats', component: StatsComponent },

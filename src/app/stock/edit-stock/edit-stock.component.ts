@@ -75,7 +75,7 @@ export class EditStockComponent implements OnInit {
 
     const token = localStorage.getItem('authToken');
     if (!token) {
-      this.router.navigate(['/login']);
+      // this.router.navigate(['/login']);
       return;
     }
 
@@ -83,11 +83,19 @@ export class EditStockComponent implements OnInit {
       Authorization: `Bearer ${token}`
     });
 
-    const dateOnly = this.stockDate.split('T')[0];
+    this.localName = decodeURIComponent(
+      this.route.snapshot.paramMap.get('localName')!
+    );
 
     this.http.get<ProductStockDateResponse[]>(
-      `${Common.url}/stock/${this.localName}/${dateOnly}`,
-      { headers }
+      `${Common.url}/stock/get-local-stock`,
+      {
+        headers,
+        params: {
+          localName: this.localName,
+          date: this.stockDate
+        }
+      }
     ).subscribe({
       next: (data) => {
         this.buildForm(data);
@@ -100,7 +108,7 @@ export class EditStockComponent implements OnInit {
         this.loading = false;
 
         if (err.status === 401 || err.status === 403) {
-          this.router.navigate(['/login']);
+          // this.router.navigate(['/login']);
         }
       }
     });

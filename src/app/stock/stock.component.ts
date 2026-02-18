@@ -179,7 +179,11 @@ export class StockComponent implements OnInit {
   }
 
   editarStock(local: string, stockDate: string): void {
-    this.router.navigate(['/stock/editar', local, stockDate]);
+    const dateOnly = stockDate.split('T')[0];
+    const encodedLocal = encodeURIComponent(local);
+    console.log('Navegando a:', local, dateOnly);
+    this.router.navigate(['/stock/editar', encodedLocal, dateOnly]);
   }
+
 
 }
