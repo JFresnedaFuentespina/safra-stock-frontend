@@ -119,6 +119,7 @@ export class EditStockComponent implements OnInit {
     productsFormArray.clear();
 
     data.forEach(item => {
+      const productDate = item.productStock.date ? item.productStock.date.split('T')[0] : '';
       productsFormArray.push(
         this.fb.group({
           productId: [item.productStock.id],
@@ -126,6 +127,10 @@ export class EditStockComponent implements OnInit {
           stock: [
             item.productStock.stock,
             [Validators.required, Validators.min(0)]
+          ],
+          date: [
+            productDate,
+            Validators.required
           ]
         })
       );
@@ -151,10 +156,11 @@ export class EditStockComponent implements OnInit {
     });
 
     const updatedStock = this.productsArray.value.map((product: any) => ({
-      productId: product.productId,
+      id: product.productId,
+      productName: product.productName,
       stock: product.stock,
       localName: this.localName,
-      date: `${this.stockDate}T00:00:00`
+      date: product.date ? `${product.date}T00:00:00` : `${this.stockDate}T00:00:00`
     }));
 
     this.http.put(
@@ -164,7 +170,7 @@ export class EditStockComponent implements OnInit {
     ).subscribe({
       next: () => {
         alert('Stock actualizado correctamente.');
-        // this.router.navigate(['/stock']);
+        this.router.navigate(['/stock']);
       },
       error: (err) => {
         console.error(err);
